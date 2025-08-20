@@ -25,7 +25,7 @@ def salva_dato(tipo, data, importo, categoria=""):
     sheet.append_row([tipo, str(data), importo, categoria])
 
 # --- Interfaccia ---
-st.title("💰 Gestione Spese e Risparmi con Google Sheets")
+st.title("💰 Gestione Spese e Risparmi")
 
 # Carico i dati esistenti
 df = carica_dati()
@@ -80,3 +80,4 @@ if not df.empty:
     st.pyplot(fig)
 else:
     st.info("Nessun dato ancora inserito.")
+
