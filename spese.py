@@ -10,7 +10,6 @@ def connect_gsheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
     client = gspread.authorize(creds)
-    # Sostituisci con l’ID del tuo Google Sheet
     sheet = client.open_by_key("1Wf8A8BkTPJGrQmJca35_Spsbj1HJxmZoLffkreqGkrM").sheet1  
     return sheet
 
@@ -29,6 +28,9 @@ st.title("💰 Gestione Spese e Risparmi")
 
 # Carico i dati esistenti
 df = carica_dati()
+
+# Debug: mostra le colonne presenti (puoi togliere questa riga se non ti serve)
+st.write("Colonne presenti:", df.columns.tolist())
 
 # Form spese
 st.subheader("➖ Aggiungi Spesa")
@@ -59,18 +61,22 @@ if not df.empty:
     st.subheader("📊 Riepilogo")
     st.dataframe(df)
 
-    totale_spese = df[df["Tipo"]=="Spesa"]["Importo"].sum()
-    totale_risparmi = df[df["Tipo"]=="Risparmio"]["Importo"].sum()
+    # Assicurati che Importo sia numerico
+    spese_importo = pd.to_numeric(df[df["Tipo"] == "Spesa"]["Importo"], errors='coerce')
+    totale_spese = spese_importo.sum() if not spese_importo.empty else 0.0
+
+    risparmi_importo = pd.to_numeric(df[df["Tipo"] == "Risparmio"]["Importo"], errors='coerce')
+    totale_risparmi = risparmi_importo.sum() if not risparmi_importo.empty else 0.0
 
     col1, col2 = st.columns(2)
     col1.metric("Totale Spese", f"{totale_spese:.2f} €")
     col2.metric("Totale Risparmi", f"{totale_risparmi:.2f} €")
 
     # --- Grafico mensile ---
-    df["Data"] = pd.to_datetime(df["Data"])
+    df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
     df["Mese"] = df["Data"].dt.to_period("M")
-    spese_mensili = df[df["Tipo"]=="Spesa"].groupby("Mese")["Importo"].sum()
-    risparmi_mensili = df[df["Tipo"]=="Risparmio"].groupby("Mese")["Importo"].sum()
+    spese_mensili = spese_importo.groupby(df.loc[df["Tipo"] == "Spesa", "Mese"]).sum()
+    risparmi_mensili = risparmi_importo.groupby(df.loc[df["Tipo"] == "Risparmio", "Mese"]).sum()
 
     st.subheader("📈 Andamento Mensile")
     fig, ax = plt.subplots()
