@@ -23,14 +23,6 @@ def carica_dati():
 def salva_dato(tipo, data, importo, categoria=""):
     sheet.append_row([tipo, str(data), importo, categoria])
 
-def safe_format(val):
-    try:
-        if hasattr(val, 'item'):  # per numpy scalar o simili
-            val = val.item()
-        return f"{float(val):.2f} €"
-    except:
-        return "0.00 €"
-
 # --- Interfaccia ---
 st.title("💰 Gestione Spese e Risparmi")
 
@@ -66,19 +58,21 @@ if not df.empty:
     st.subheader("📊 Riepilogo")
     st.dataframe(df)
 
-    # Converte "Importo" in numerico, gestendo errori
     spese_importo = pd.to_numeric(df[df["Tipo"] == "Spesa"]["Importo"], errors='coerce')
     risparmi_importo = pd.to_numeric(df[df["Tipo"] == "Risparmio"]["Importo"], errors='coerce')
 
-    # Calcola somme totali
     totale_spese = spese_importo.sum()
     totale_risparmi = risparmi_importo.sum()
 
-    col1, col2 = st.columns(2)
-    col1.metric("Totale Spese", safe_format(totale_spese))
-    col2.metric("Totale Risparmi", safe_format(totale_risparmi))
+    if pd.isna(totale_spese):
+        totale_spese = 0.0
+    if pd.isna(totale_risparmi):
+        totale_risparmi = 0.0
 
-    # --- Grafico mensile ---
+    col1, col2 = st.columns(2)
+    col1.metric("Totale Spese", round(totale_spese, 2), "€")
+    col2.metric("Totale Risparmi", round(totale_risparmi, 2), "€")
+
     df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
     df["Mese"] = df["Data"].dt.to_period("M")
 
@@ -92,7 +86,6 @@ if not df.empty:
     ax.legend()
     st.pyplot(fig)
 
-    # --- Conteggio movimenti ---
     conteggio_spese = len(df[df["Tipo"] == "Spesa"])
     conteggio_risparmi = len(df[df["Tipo"] == "Risparmio"])
 
