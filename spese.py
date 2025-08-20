@@ -27,7 +27,7 @@ def clean_importo(series):
     return pd.to_numeric(series.astype(str).str.replace("€", "").str.replace(",", ".").str.strip(), errors='coerce')
 
 # --- Interfaccia ---
-st.title("💰 Gestione Spese e Risparmi")
+st.title("💰 Gestione Spese e Risparmi NAO PODE GASTAR")
 
 # Carico i dati esistenti
 df = carica_dati()
@@ -99,3 +99,4 @@ if not df.empty:
 
 else:
     st.info("Nessun dato ancora inserito.")
+
