@@ -78,8 +78,15 @@ if not df.empty:
     risparmi_mensili.plot(kind="bar", ax=ax, color="green", alpha=0.6, label="Risparmi")
     ax.legend()
     st.pyplot(fig)
+
+    # --- Conteggio movimenti ---
+    conteggio_spese = len(df[df["Tipo"] == "Spesa"])
+    conteggio_risparmi = len(df[df["Tipo"] == "Risparmio"])
+
+    st.subheader("📋 Conteggio Movimenti")
+    col3, col4 = st.columns(2)
+    col3.metric("Numero Spese", conteggio_spese)
+    col4.metric("Numero Risparmi", conteggio_risparmi)
+
 else:
     st.info("Nessun dato ancora inserito.")
-
-
-
