@@ -23,6 +23,14 @@ def carica_dati():
 def salva_dato(tipo, data, importo, categoria=""):
     sheet.append_row([tipo, str(data), importo, categoria])
 
+def safe_format(val):
+    try:
+        if hasattr(val, 'item'):  # per numpy scalar o simili
+            val = val.item()
+        return f"{float(val):.2f} €"
+    except:
+        return "0.00 €"
+
 # --- Interfaccia ---
 st.title("💰 Gestione Spese e Risparmi")
 
@@ -62,16 +70,13 @@ if not df.empty:
     spese_importo = pd.to_numeric(df[df["Tipo"] == "Spesa"]["Importo"], errors='coerce')
     risparmi_importo = pd.to_numeric(df[df["Tipo"] == "Risparmio"]["Importo"], errors='coerce')
 
-    # Somme totali con conversione in float e controllo NaN
+    # Calcola somme totali
     totale_spese = spese_importo.sum()
     totale_risparmi = risparmi_importo.sum()
 
-    totale_spese = float(totale_spese) if not pd.isna(totale_spese) else 0.0
-    totale_risparmi = float(totale_risparmi) if not pd.isna(totale_risparmi) else 0.0
-
     col1, col2 = st.columns(2)
-    col1.metric("Totale Spese", f"{totale_spese:.2f} €")
-    col2.metric("Totale Risparmi", f"{totale_risparmi:.2f} €")
+    col1.metric("Totale Spese", safe_format(totale_spese))
+    col2.metric("Totale Risparmi", safe_format(totale_risparmi))
 
     # --- Grafico mensile ---
     df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
