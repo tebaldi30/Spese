@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-import math  # import per gestione NaN
 
 # --- Connessione a Google Sheets ---
 @st.cache_resource
@@ -24,14 +23,17 @@ def carica_dati():
 def salva_dato(tipo, data, importo, categoria=""):
     sheet.append_row([tipo, str(data), importo, categoria])
 
+def format_importo(valore):
+    try:
+        return f"{float(valore):.2f} €"
+    except (ValueError, TypeError):
+        return "0.00 €"
+
 # --- Interfaccia ---
 st.title("💰 Gestione Spese e Risparmi")
 
 # Carico i dati esistenti
 df = carica_dati()
-
-# Debug: mostra le colonne presenti (rimuovi se non serve)
-st.write("Colonne presenti:", df.columns.tolist())
 
 # Form spese
 st.subheader("➖ Aggiungi Spesa")
@@ -66,18 +68,13 @@ if not df.empty:
     spese_importo = pd.to_numeric(df[df["Tipo"] == "Spesa"]["Importo"], errors='coerce')
     risparmi_importo = pd.to_numeric(df[df["Tipo"] == "Risparmio"]["Importo"], errors='coerce')
 
-    # Somme con gestione NaN
-    totale_spese = float(spese_importo.sum())
-    if math.isnan(totale_spese):
-        totale_spese = 0.0
-
-    totale_risparmi = float(risparmi_importo.sum())
-    if math.isnan(totale_risparmi):
-        totale_risparmi = 0.0
+    # Somme totali
+    totale_spese = spese_importo.sum()
+    totale_risparmi = risparmi_importo.sum()
 
     col1, col2 = st.columns(2)
-    col1.metric("Totale Spese", f"{totale_spese:.2f} €")
-    col2.metric("Totale Risparmi", f"{totale_risparmi:.2f} €")
+    col1.metric("Totale Spese", format_importo(totale_spese))
+    col2.metric("Totale Risparmi", format_importo(totale_risparmi))
 
     # --- Grafico mensile ---
     df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
