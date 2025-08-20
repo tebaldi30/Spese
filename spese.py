@@ -23,6 +23,9 @@ def carica_dati():
 def salva_dato(tipo, data, importo, categoria=""):
     sheet.append_row([tipo, str(data), importo, categoria])
 
+def clean_importo(series):
+    return pd.to_numeric(series.astype(str).str.replace("€", "").str.replace(",", ".").str.strip(), errors='coerce')
+
 # --- Interfaccia ---
 st.title("💰 Gestione Spese e Risparmi")
 
@@ -58,8 +61,8 @@ if not df.empty:
     st.subheader("📊 Riepilogo")
     st.dataframe(df)
 
-    spese_importo = pd.to_numeric(df[df["Tipo"] == "Spesa"]["Importo"], errors='coerce')
-    risparmi_importo = pd.to_numeric(df[df["Tipo"] == "Risparmio"]["Importo"], errors='coerce')
+    spese_importo = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"])
+    risparmi_importo = clean_importo(df[df["Tipo"] == "Risparmio"]["Importo"])
 
     totale_spese = spese_importo.sum()
     totale_risparmi = risparmi_importo.sum()
