@@ -113,20 +113,40 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2000 €
-        st.subheader("📊 Andamento Spese Mensili")
+        # Grafico a torta spese vs budget 2000 € elegante
+        st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
         soglia_massima = 2000.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
         restante = soglia_massima - totale_spese_valore
 
         valori = [totale_spese_valore, restante]
-        colori = ["red", "green"]
+        colori = ["#e74c3c", "#27ae60"]  # rosso caldo e verde moderno
         etichette = [f"Speso {format_currency(totale_spese_valore)} €", f"Disponibile {format_currency(restante)} €"]
 
         fig, ax = plt.subplots()
-        ax.pie(valori, labels=etichette, colors=colori, autopct="%1.1f%%", startangle=90, counterclock=False)
+
+        # Sfondo trasparente
+        fig.patch.set_alpha(0.0)
+        ax.patch.set_alpha(0.0)
+
+        wedges, texts, autotexts = ax.pie(
+            valori,
+            labels=etichette,
+            colors=colori,
+            autopct="%1.1f%%",
+            startangle=90,
+            counterclock=False,
+            wedgeprops={'edgecolor': 'white', 'linewidth': 2},
+            textprops={'color':"white", 'weight':'bold'}
+        )
+
         ax.axis("equal")  # cerchio perfetto
+
+        for autotext in autotexts:
+            autotext.set_color('white')
+            autotext.set_weight('bold')
+
         st.pyplot(fig)
     else:
         st.info("Nessuna spesa registrata.")
@@ -156,4 +176,3 @@ if not df.empty:
 
 else:
     st.info("Nessun dato ancora inserito.")
-
