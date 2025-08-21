@@ -147,7 +147,7 @@ if not df.empty:
         ax.axis("equal")
         st.pyplot(fig)
 
-        # Pillole con colori tonalità simili all'immagine
+        # Pillole con colori tonalità coerenti con delta
         pillola_speso = f"""
         <div style="
             display: inline-block;
@@ -166,20 +166,21 @@ if not df.empty:
         """
 
         pillola_disponibile = f"""
-<div style="
-    display: inline-block;
-    background-color: #e6f8ee;    /* verde molto chiaro */
-    border-radius: 16px;
-    padding: 6px 16px;
-    font-weight: 600;
-    color: #27ae60;               /* stessa tonalità verde delta */
-    font-size: 16px;
-    font-family: inherit;
-    white-space: nowrap;
-">
-    Disponibile: {format_currency(restante)}&nbsp;€
-</div>
-"""
+        <div style="
+            display: inline-block;
+            background-color: #e6f8ee;    /* verde molto chiaro */
+            border-radius: 16px;
+            padding: 6px 16px;
+            font-weight: 600;
+            color: #27ae60;               /* testo verde delta */
+            font-size: 16px;
+            font-family: inherit;
+            white-space: nowrap;
+        ">
+            Disponibile: {format_currency(restante)}&nbsp;€
+        </div>
+        """
+
         st.markdown(f"{pillola_speso}{pillola_disponibile}", unsafe_allow_html=True)
 
     else:
@@ -210,4 +211,3 @@ if not df.empty:
 
 else:
     st.info("Nessun dato ancora inserito.")
-
