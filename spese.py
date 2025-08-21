@@ -109,11 +109,13 @@ if not df.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
 
+        # Mostra tabella
         st.dataframe(spese.drop(columns="Importo_num"))
 
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
+        # Grafico andamento spese
         soglia_massima = 2000.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
         restante = soglia_massima - totale_spese_valore
@@ -196,17 +198,6 @@ if not df.empty:
             value=f"{percentuale_raggiunta:.1f}%",
             delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
         )
-
-        # --- Cancella risparmio ---
-        st.subheader("❌ Cancella Movimento Risparmio")
-        opzioni_cancellazione_risp = risp.apply(lambda x: f'{x["Data"]} - {x["Categoria"]} - {x["Importo"]} €', axis=1)
-        scelta_risp = st.selectbox("Seleziona movimento da cancellare", [""] + opzioni_cancellazione_risp.tolist(), key="risparmio")
-        if st.button("Cancella Movimento Selezionato"):
-            if scelta_risp:
-                index_cancellare = opzioni_cancellazione_risp[opzioni_cancellazione_risp == scelta_risp].index[0]
-                sheet.delete_row(index_cancellare + 2)
-                st.success("Movimento cancellato!")
-                st.experimental_rerun()
     else:
         st.info("Nessun risparmio registrato.")
 else:
