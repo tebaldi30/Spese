@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import time
 
 # --- Connessione a Google Sheets ---
 @st.cache_resource
@@ -115,11 +116,19 @@ if not df.empty:
             col1.write(row["Data"])
             col2.write(row["Categoria"])
             col3.write(f'{row["Importo"]} €')
+            
             if col4.button("🗑️", key=f"delete_{i}"):
                 try:
                     index_cancellare = i + 2  # +2 per header + indice zero
                     sheet.delete_rows(index_cancellare)
-                    st.success("Spesa cancellata!")
+                    
+                    # Notifica temporanea in alto
+                    placeholder = st.empty()
+                    placeholder.success("✅ Spesa cancellata!")
+                    time.sleep(2)
+                    placeholder.empty()
+                    
+                    # Ricarica subito i dati aggiornati e interrompe il ciclo
                     df = carica_dati()
                     spese = df[df["Tipo"] == "Spesa"].copy()
                     spese["Importo_num"] = clean_importo(spese["Importo"])
