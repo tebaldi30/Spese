@@ -143,17 +143,38 @@ if not df.empty:
 
         st.pyplot(fig)
 
-        verde_metric = "#27ae60"
-        testo_etichette = (
-            f"<div style='color:{verde_metric}; "
-            "background-color:rgba(39, 174, 96, 0.1); padding:8px; "
-            "border-radius:8px; font-weight:bold; max-width:350px;'>"
-            f"Speso {format_currency(totale_spese_valore)} € &nbsp;&nbsp;&nbsp; "
-            f"Disponibile {format_currency(restante)} €"
-            "</div>"
+        # Etichette verdi affiancate, stile "st.metric"
+        st.markdown(
+            """
+            <div style='display: flex; gap: 12px; margin-bottom:16px; margin-top:8px;'>
+                <div style='
+                    background-color: #EAF8F1;
+                    border-radius: 18px;
+                    padding: 5px 14px;
+                    color: #299F63;
+                    font-size: 16px;
+                    font-weight: 500;
+                    display:inline-block;
+                    border: 1.5px solid #B3E2CA;
+                    '>
+                    Speso {} €
+                </div>
+                <div style='
+                    background-color: #EAF8F1;
+                    border-radius: 18px;
+                    padding: 5px 14px;
+                    color: #299F63;
+                    font-size: 16px;
+                    font-weight: 500;
+                    display:inline-block;
+                    border: 1.5px solid #B3E2CA;
+                    '>
+                    Disponibile {} €
+                </div>
+            </div>
+            """.format(format_currency(totale_spese_valore), format_currency(restante)),
+            unsafe_allow_html=True
         )
-
-        st.markdown(testo_etichette, unsafe_allow_html=True)
 
     else:
         st.info("Nessuna spesa registrata.")
