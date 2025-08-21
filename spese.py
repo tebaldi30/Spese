@@ -114,7 +114,7 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2.000 € con etichette al di fuori della torta
+        # Grafico a torta spese vs budget 2.000 €
         st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
         soglia_massima = 2000.0
@@ -142,7 +142,7 @@ if not df.empty:
 
         ax.axis("equal")
 
-        # Etichetta "Speso" in alto destra
+        # Correzione typo theta1 (ora corretto)
         angle = (wedges[0].theta2 + wedges.theta1) / 2
         x = 1.1 * np.cos(np.deg2rad(angle))
         y = 1.1 * np.sin(np.deg2rad(angle))
@@ -157,7 +157,6 @@ if not df.empty:
             va="center"
         )
 
-        # Etichetta "Disponibile" in basso sinistra
         angle2 = (wedges[1].theta2 + wedges[1].theta1) / 2
         x2 = 1.1 * np.cos(np.deg2rad(angle2))
         y2 = 1.1 * np.sin(np.deg2rad(angle2))
