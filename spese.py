@@ -109,13 +109,11 @@ if not df.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
 
-        # Mostra tabella
         st.dataframe(spese.drop(columns="Importo_num"))
 
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico andamento spese
         soglia_massima = 2000.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
         restante = soglia_massima - totale_spese_valore
@@ -164,7 +162,7 @@ if not df.empty:
             )
             st.caption(f"{format_currency(restante)} € disponibile")
 
-        # --- Cancella spesa robusta ---
+        # --- Cancella spesa robusta con delete_rows ---
         st.subheader("❌ Cancella Spesa")
         opzioni_cancellazione = spese.apply(lambda x: f'{x["Data"]} - {x["Categoria"]} - {x["Importo"]} €', axis=1)
         scelta = st.selectbox("Seleziona spesa da cancellare", [""] + opzioni_cancellazione.tolist())
@@ -174,7 +172,7 @@ if not df.empty:
                 try:
                     index_cancellare = int(opzioni_cancellazione[opzioni_cancellazione == scelta].index[0]) + 2
                     if index_cancellare > 1 and index_cancellare <= len(sheet.get_all_values()):
-                        sheet.delete_row(index_cancellare)
+                        sheet.delete_rows(index_cancellare)  # <--- CORRETTO
                         st.success("Spesa cancellata!")
                         st.experimental_rerun()
                     else:
