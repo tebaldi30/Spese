@@ -21,7 +21,9 @@ def carica_dati():
     return pd.DataFrame(records)
 
 def salva_dato(tipo, data, importo, categoria=""):
-    sheet.append_row([tipo, str(data), importo, categoria])
+    # Converte la data in formato gg,mm,aaaa
+    data_formattata = data.strftime("%d,%m,%Y")
+    sheet.append_row([tipo, data_formattata, importo, categoria])
 
 def clean_importo(series):
     return pd.to_numeric(
@@ -39,6 +41,7 @@ def format_currency(value):
 
 # --- Carico i dati ---
 df = carica_dati()
+df['Data'] = pd.to_datetime(df['Data'], errors='coerce').dt.strftime('%d,%m,%Y')
 spese_importo = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"]) if not df.empty else pd.Series(dtype=float)
 totale_spese = spese_importo.sum() if not df.empty else 0.0
 
@@ -196,6 +199,7 @@ if not df.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
