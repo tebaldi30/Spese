@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import pandas as pd
 import matplotlib.pyplot as plt
 import gspread
@@ -108,6 +108,7 @@ if not df.empty:
     if not spese.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
+
         st.dataframe(spese.drop(columns="Importo_num"))
 
         totale_spese = spese["Importo_num"].sum()
@@ -123,13 +124,10 @@ if not df.empty:
         percent_speso = (totale_spese_valore / soglia_massima) * 100 if soglia_massima else 0
         percent_disp = 100 - percent_speso
 
-        # --- Titolo sopra il grafico a torta ---
         st.subheader("📈 Andamento Mensile")
-
         fig, ax = plt.subplots()
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
-
         wedges, texts, autotexts = ax.pie(
             valori,
             colors=colori,
@@ -141,16 +139,12 @@ if not df.empty:
             wedgeprops={'edgecolor': 'white', 'linewidth': 2},
             textprops={'color': 'black', 'weight': 'bold'}
         )
-
         for text in texts:
             text.set_text('')
-
         ax.axis('equal')
         st.pyplot(fig)
 
         col1, col2 = st.columns(2)
-
-        # --- Percentuale speso: freccia giù rossa, valore negativo ---
         with col1:
             st.metric(
                 label="Speso",
@@ -159,8 +153,6 @@ if not df.empty:
                 delta_color="normal"
             )
             st.caption(f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €")
-
-        # --- Percentuale disponibile: freccia su verde ---
         with col2:
             st.metric(
                 label="Disponibile",
@@ -169,6 +161,18 @@ if not df.empty:
                 delta_color="normal"
             )
             st.caption(f"{format_currency(restante)} € disponibile")
+
+        # --- Cancella spesa ---
+        st.subheader("❌ Cancella Spesa")
+        opzioni_cancellazione = spese.apply(lambda x: f'{x["Data"]} - {x["Categoria"]} - {x["Importo"]} €', axis=1)
+        scelta = st.selectbox("Seleziona spesa da cancellare", [""] + opzioni_cancellazione.tolist())
+
+        if st.button("Cancella Spesa Selezionata"):
+            if scelta:
+                index_cancellare = opzioni_cancellazione[opzioni_cancellazione == scelta].index[0]
+                sheet.delete_row(index_cancellare + 2)  # +2 perché header + indice zero
+                st.success("Spesa cancellata!")
+                st.experimental_rerun()
 
     else:
         st.info("Nessuna spesa registrata.")
@@ -192,6 +196,17 @@ if not df.empty:
             value=f"{percentuale_raggiunta:.1f}%",
             delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
         )
+
+        # --- Cancella risparmio ---
+        st.subheader("❌ Cancella Movimento Risparmio")
+        opzioni_cancellazione_risp = risp.apply(lambda x: f'{x["Data"]} - {x["Categoria"]} - {x["Importo"]} €', axis=1)
+        scelta_risp = st.selectbox("Seleziona movimento da cancellare", [""] + opzioni_cancellazione_risp.tolist(), key="risparmio")
+        if st.button("Cancella Movimento Selezionato"):
+            if scelta_risp:
+                index_cancellare = opzioni_cancellazione_risp[opzioni_cancellazione_risp == scelta_risp].index[0]
+                sheet.delete_row(index_cancellare + 2)
+                st.success("Movimento cancellato!")
+                st.experimental_rerun()
     else:
         st.info("Nessun risparmio registrato.")
 else:
