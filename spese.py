@@ -10,7 +10,7 @@ def connect_gsheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
     client = gspread.authorize(creds)
-    sheet = client.open_by_key("1Wf8A8BkTPJGrQmJca35_Spsbj1HJxmZoLffkreqGkrM").sheet1
+    sheet = client.open_by_key("1Wf8A8BkTPJGrQmJca35_Spsbj1HJxmZoLffkreqGkrM").sheet1  
     return sheet
 
 sheet = connect_gsheets()
@@ -49,8 +49,12 @@ st.title("💰 Gestione Spese e Risparmi")
 st.markdown(
     """
     <style>
-    @keyframes blink { 50% { opacity: 0; } }
-    .blinking { animation: blink 1s infinite; }
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+    .blinking {
+        animation: blink 1s infinite;
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -62,7 +66,8 @@ classe = "blinking" if colore == "red" else ""
 st.markdown(
     f"""
     <div style="display:flex;align-items:center;gap:10px;margin-top:5px;">
-        <div style="width:20px;height:20px;border-radius:50%;background:{colore};" class="{classe}"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:{colore};"
+             class="{classe}"></div>
         <span style="font-size:16px;">Totale Spese: {format_currency(totale_spese)} €</span>
     </div>
     """,
@@ -100,7 +105,6 @@ df = carica_dati()
 if not df.empty:
     st.header("📊 Riepilogo Spese")
     spese = df[df["Tipo"] == "Spesa"].copy()
-
     if not spese.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
@@ -119,7 +123,9 @@ if not df.empty:
         percent_speso = (totale_spese_valore / soglia_massima) * 100 if soglia_massima else 0
         percent_disp = 100 - percent_speso
 
+        # --- Titolo sopra il grafico a torta ---
         st.subheader("📈 Andamento Mensile")
+
         fig, ax = plt.subplots()
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
@@ -135,15 +141,34 @@ if not df.empty:
             wedgeprops={'edgecolor': 'white', 'linewidth': 2},
             textprops={'color': 'black', 'weight': 'bold'}
         )
-        for text in texts: text.set_text('')
+
+        for text in texts:
+            text.set_text('')
+
         ax.axis('equal')
         st.pyplot(fig)
 
         col1, col2 = st.columns(2)
+
+        # --- Percentuale speso: freccia giù rossa, valore negativo ---
         with col1:
-            st.metric("Speso", f"{percent_speso:.1f}%", delta=-totale_spese_valore, delta_color="normal")
+            st.metric(
+                label="Speso",
+                value=f"{percent_speso:.1f}%",
+                delta=-totale_spese_valore,
+                delta_color="normal"
+            )
+            st.caption(f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €")
+
+        # --- Percentuale disponibile: freccia su verde ---
         with col2:
-            st.metric("Disponibile", f"{percent_disp:.1f}%", delta=restante, delta_color="normal")
+            st.metric(
+                label="Disponibile",
+                value=f"{percent_disp:.1f}%",
+                delta=restante,
+                delta_color="normal"
+            )
+            st.caption(f"{format_currency(restante)} € disponibile")
 
     else:
         st.info("Nessuna spesa registrata.")
@@ -151,50 +176,23 @@ if not df.empty:
     # --- RIEPILOGO RISPARMI ---
     st.header("💰 Riepilogo Risparmi")
     risp = df[df["Tipo"] == "Risparmio"].copy()
-
     if not risp.empty:
         risp["Importo_num"] = clean_importo(risp["Importo"])
         risp["Importo"] = risp["Importo_num"].apply(format_currency)
         st.dataframe(risp.drop(columns="Importo_num"))
 
         totale_risparmi = risp["Importo_num"].sum()
+        st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
+
         obiettivo_risparmio = 40000.0
         percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
-
-        if "show_risparmi" not in st.session_state:
-            st.session_state.show_risparmi = True
-
-        # --- Metrica + occhio sulla stessa riga usando HTML ---
-        img_path = "occhio_aperto.png" if st.session_state.show_risparmi else "occhio_chiuso.png"
-        risparmi_html = f"""
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="text-align:left;">
-                <h4 style="margin:0;">Risparmio raggiunto</h4>
-                <p style="margin:0; font-size:20px;">
-                    {"{:.1f}%".format(percentuale_raggiunta) if st.session_state.show_risparmi else "•••••"}
-                </p>
-                <p style="margin:0; font-size:12px; color:gray;">
-                    {format_currency(totale_risparmi) + " € su " + format_currency(obiettivo_risparmio) + " €" if st.session_state.show_risparmi else "•••••"}
-                </p>
-            </div>
-            <form method="post">
-                <input type="image" src="{img_path}" width="30" style="border:none; cursor:pointer;" name="toggle_occhio">
-            </form>
-        </div>
-        """
-        st.markdown(risparmi_html, unsafe_allow_html=True)
-
-        # Toggle stato cliccando sull'immagine
-        if "toggle_occhio_clicked" not in st.session_state:
-            st.session_state.toggle_occhio_clicked = False
-
-        if st.query_params.get("toggle_occhio") or st.session_state.toggle_occhio_clicked:
-            st.session_state.show_risparmi = not st.session_state.show_risparmi
-            st.session_state.toggle_occhio_clicked = False
-            st.experimental_rerun()
-
+        st.subheader("🎯 Percentuale Obiettivo Risparmi")
+        st.metric(
+            label="Risparmio raggiunto",
+            value=f"{percentuale_raggiunta:.1f}%",
+            delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
+        )
     else:
         st.info("Nessun risparmio registrato.")
-
 else:
     st.info("Nessun dato ancora inserito.")
