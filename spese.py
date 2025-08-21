@@ -113,7 +113,7 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2000 € senza etichette esterne
+        # Grafico a torta spese vs budget 2.000 €
         st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
         soglia_massima = 2000.0
@@ -128,7 +128,7 @@ if not df.empty:
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
 
-        wedges, autotexts = ax.pie(
+        wedges, texts, autotexts = ax.pie(
             valori,
             labels=None,
             colors=colori,
@@ -143,7 +143,6 @@ if not df.empty:
 
         st.pyplot(fig)
 
-        # Testo verde esterno simile a st.metric
         verde_metric = "#27ae60"
         testo_etichette = (
             f"<div style='color:{verde_metric}; "
