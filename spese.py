@@ -42,7 +42,10 @@ df = carica_dati()
 spese_importo = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"]) if not df.empty else pd.Series(dtype=float)
 totale_spese = spese_importo.sum() if not df.empty else 0.0
 
-# --- Titolo con pallina in alto ---
+# --- Titolo ---
+st.title("💰 Gestione Spese e Risparmi")
+
+# --- Pallina sotto il titolo ---
 st.markdown(
     """
     <style>
@@ -62,13 +65,10 @@ classe = "blinking" if colore == "red" else ""
 
 st.markdown(
     f"""
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-        <h1 style="margin:0;">💰 Gestione Spese e Risparmi</h1>
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:20px;height:20px;border-radius:50%;background:{colore};"
-                 class="{classe}"></div>
-            <span style="font-size:16px;">Totale Spese: {format_currency(totale_spese)} €</span>
-        </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:5px;">
+        <div style="width:20px;height:20px;border-radius:50%;background:{colore};"
+             class="{classe}"></div>
+        <span style="font-size:16px;">Totale Spese: {format_currency(totale_spese)} €</span>
     </div>
     """,
     unsafe_allow_html=True
