@@ -3,6 +3,9 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+import matplotlib
+matplotlib.use("Agg")  # backend sicuro per Streamlit Cloud
+from matplotlib.figure import Figure
 import time
 
 # --- Connessione a Google Sheets ---
@@ -110,7 +113,7 @@ if not df.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
 
-        # Aggiungiamo una colonna "Cestino" con testo cliccabile
+        # Aggiungiamo colonna "Cestino"
         spese["Cancella"] = "🗑️"
 
         # Configura AG Grid
@@ -133,32 +136,29 @@ if not df.empty:
         # Controllo click sul cestino
         if grid_response['selected_rows']:
             row = grid_response['selected_rows'][0]
-            row_index = spese.index[spese["Data"]==row["Data"]][0] + 2  # +2 per header
+            row_index = spese.index[spese["Data"]==row["Data"]][0] + 2
             try:
                 sheet.delete_rows(row_index)
-                st.success("✅ Spesa cancellata!")
-                st.experimental_rerun()  # ricarica la pagina con tabella aggiornata
+                placeholder = st.empty()
+                placeholder.success("✅ Spesa cancellata!")
+                time.sleep(2)
+                placeholder.empty()
+                st.experimental_rerun()
             except Exception as e:
                 st.error(f"Errore durante la cancellazione: {e}")
 
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico andamento spese
+        # --- Andamento Mensile (sicuro) ---
         soglia_massima = 2000.0
-        totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
+        totale_spese_valore = min(totale_spese, soglia_massima)
         restante = soglia_massima - totale_spese_valore
-
         valori = [totale_spese_valore, restante]
         colori = ["#e74c3c", "#27ae60"]
 
-        percent_speso = (totale_spese_valore / soglia_massima) * 100 if soglia_massima else 0
-        percent_disp = 100 - percent_speso
-
-        st.subheader("📈 Andamento Mensile")
-        fig, ax = plt.subplots()
-        fig.patch.set_alpha(0.0)
-        ax.patch.set_alpha(0.0)
+        fig = Figure(figsize=(4,4))
+        ax = fig.add_subplot(111)
         wedges, texts, autotexts = ax.pie(
             valori,
             colors=colori,
@@ -179,7 +179,7 @@ if not df.empty:
         with col1:
             st.metric(
                 label="Speso",
-                value=f"{percent_speso:.1f}%",
+                value=f"{(totale_spese_valore/soglia_massima*100):.1f}%",
                 delta=-totale_spese_valore,
                 delta_color="normal"
             )
@@ -187,7 +187,7 @@ if not df.empty:
         with col2:
             st.metric(
                 label="Disponibile",
-                value=f"{percent_disp:.1f}%",
+                value=f"{(restante/soglia_massima*100):.1f}%",
                 delta=restante,
                 delta_color="normal"
             )
