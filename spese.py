@@ -38,7 +38,6 @@ def clean_importo(series):
     )
 
 def format_currency(value):
-    """Formatta il numero in stile italiano: 1.200,00"""
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 # --- Carico i dati ---
@@ -113,7 +112,7 @@ if not df.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
 
-        # Configura AG Grid con checkbox per selezione riga
+        # Configura AG Grid con checkbox
         gb = GridOptionsBuilder.from_dataframe(spese)
         gb.configure_selection('single', use_checkbox=True)
         grid_options = gb.build()
@@ -127,18 +126,23 @@ if not df.empty:
             height=300
         )
 
-        # Bottone per cancellare riga selezionata
+        # Bottone per cancellare riga selezionata con check indice e delay
         if st.button("🗑️ Cancella riga selezionata"):
             if grid_response['selected_rows']:
                 row = grid_response['selected_rows'][0]
                 row_index = spese.index[spese["Data"]==row["Data"]][0] + 2  # +2 per header
                 try:
-                    sheet.delete_rows(row_index)
-                    placeholder = st.empty()
-                    placeholder.success("✅ Spesa cancellata!")
-                    time.sleep(2)
-                    placeholder.empty()
-                    st.experimental_rerun()
+                    all_rows = sheet.get_all_values()
+                    if row_index <= len(all_rows):
+                        sheet.delete_rows(row_index)
+                        time.sleep(1)  # Delay per sicurezza API
+                        placeholder = st.empty()
+                        placeholder.success("✅ Spesa cancellata!")
+                        time.sleep(2)
+                        placeholder.empty()
+                        st.experimental_rerun()
+                    else:
+                        st.warning("La riga selezionata non esiste più.")
                 except Exception as e:
                     st.error(f"Errore durante la cancellazione: {e}")
             else:
