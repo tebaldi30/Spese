@@ -109,25 +109,22 @@ if not df.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
 
-        # Mostra la tabella con pulsanti "Cancella"
-        st.subheader("❌ Cancella Spesa")
-        spese_display = spese.copy()
-        for i, row in spese_display.iterrows():
-            col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
+        # Tabella con icona cestino discreta
+        for i, row in spese.iterrows():
+            col1, col2, col3, col4 = st.columns([2, 2, 2, 0.5])
             col1.write(row["Data"])
             col2.write(row["Categoria"])
             col3.write(f'{row["Importo"]} €')
-            if col4.button("Cancella", key=f"del_{i}"):
+            if col4.button("🗑️", key=f"delete_{i}"):
                 try:
                     index_cancellare = i + 2  # +2 per header + indice zero
                     sheet.delete_rows(index_cancellare)
                     st.success("Spesa cancellata!")
-                    # Ricarica i dati aggiornati
                     df = carica_dati()
                     spese = df[df["Tipo"] == "Spesa"].copy()
                     spese["Importo_num"] = clean_importo(spese["Importo"])
                     spese["Importo"] = spese["Importo_num"].apply(format_currency)
-                    break  # evita più cancellazioni nello stesso refresh
+                    break
                 except Exception as e:
                     st.error(f"Errore durante la cancellazione: {e}")
 
