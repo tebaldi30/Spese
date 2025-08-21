@@ -147,20 +147,22 @@ if not df.empty:
 
         col1, col2 = st.columns(2)
 
-        # --- Percentuale speso ---
+        # --- Percentuale speso con freccia giù e colore rosso ---
         with col1:
             st.metric(
                 label="Speso",
                 value=f"{percent_speso:.1f}%",
-                delta=f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €"
+                delta=f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €",
+                delta_color="inverse"
             )
 
-        # --- Percentuale disponibile ---
+        # --- Percentuale disponibile solo valore, senza freccia ---
         with col2:
             st.metric(
                 label="Disponibile",
                 value=f"{percent_disp:.1f}%",
-                delta=f"{format_currency(restante)} €"
+                delta=f"{format_currency(restante)} €",
+                delta_color="off"
             )
 
     else:
