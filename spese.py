@@ -23,18 +23,22 @@ def carica_dati():
 def salva_dato(tipo, data, importo, categoria=""):
     sheet.append_row([tipo, str(data), importo, categoria])
 
+# ✅ Funzione aggiornata per gestire importi > 999,00 €
 def clean_importo(series):
-    return pd.to_numeric(series.astype(str).str.replace("€", "").str.replace(",", ".").str.strip(), errors='coerce')
+    return pd.to_numeric(
+        series.astype(str)
+        .str.replace("€", "")
+        .str.replace(".", "", regex=False)   # rimuove separatori migliaia
+        .str.replace(",", ".", regex=False)  # converte la virgola in punto
+        .str.strip(),
+        errors="coerce"
+    )
 
 # --- Interfaccia ---
 st.title("💰 Gestione Spese e Risparmi")
 
 # Carico i dati esistenti
-try:
-    df = carica_dati()
-except Exception as e:
-    st.error("Errore nel caricamento dati: controlla credenziali o Google Sheet")
-    df = pd.DataFrame(columns=["Tipo", "Data", "Importo", "Categoria"])
+df = carica_dati()
 
 # --- Allerta visiva spese ---
 if not df.empty:
@@ -45,7 +49,7 @@ if not df.empty:
     colore = "green" if totale_spese < 2000 else "red"
     st.markdown(
         f"""
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:10px;">
             <div style="width:20px;height:20px;border-radius:50%;background:{colore};"></div>
             <span style="font-size:18px;">Allerta Spese: {round(totale_spese,2)} €</span>
         </div>
@@ -53,7 +57,7 @@ if not df.empty:
         unsafe_allow_html=True
     )
 
-# --- Form spese ---
+# Form spese
 st.subheader("➖ Aggiungi Spesa")
 with st.form("spese_form", clear_on_submit=True):
     data_spesa = st.date_input("Data spesa")
@@ -64,7 +68,7 @@ with st.form("spese_form", clear_on_submit=True):
         salva_dato("Spesa", data_spesa, valore_spesa, tipo_spesa)
         st.success("Spesa registrata!")
 
-# --- Form risparmi ---
+# Form risparmi
 st.subheader("➕ Aggiungi Risparmio")
 with st.form("risparmi_form", clear_on_submit=True):
     data_risp = st.date_input("Data risparmio")
@@ -77,7 +81,7 @@ with st.form("risparmi_form", clear_on_submit=True):
 # Aggiorna dataframe
 df = carica_dati()
 
-# --- Tabelle e grafici ---
+# --- Tabelle ---
 if not df.empty:
     st.subheader("📊 Riepilogo")
     st.dataframe(df)
