@@ -113,7 +113,7 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2000 € con etichette verdi esterne leggibili
+        # Grafico a torta spese vs budget 2000 € con etichette personalizzate
         st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
         soglia_massima = 2000.0
@@ -121,10 +121,18 @@ if not df.empty:
         restante = soglia_massima - totale_spese_valore
 
         valori = [totale_spese_valore, restante]
-        colori = ["#e74c3c", "#27ae60"]  # rosso caldo e verde moderno
-        etichette = [f"Speso {format_currency(totale_spese_valore)} €", f"Disponibile {format_currency(restante)} €"]
+        colori = ["#e74c3c", "#27ae60"]  # rosso e verde
 
-        label_color = "#27ae60"  # Verde usato come colore delle metriche (leggibile in dark e light)
+        # Funzione per formattare etichette “Speso 18.500,00 € su 40.000,00 €”
+        def get_label_text(titolo, importo, totale):
+            return f"{titolo} {format_currency(importo)} € su {format_currency(totale)} €"
+
+        etichette = [
+            get_label_text("Speso", totale_spese_valore, soglia_massima),
+            get_label_text("Disponibile", restante, soglia_massima)
+        ]
+
+        label_color = "#27ae60"  # Verde per testo etichette
 
         fig, ax = plt.subplots()
 
@@ -139,20 +147,18 @@ if not df.empty:
             startangle=90,
             counterclock=False,
             wedgeprops={'edgecolor': 'white', 'linewidth': 2},
-            textprops={'color': 'white', 'weight': 'bold'}
+            textprops={'color': label_color, 'weight': 'bold'}
         )
 
-        # Imposta colore verde leggibile per le etichette esterne
         for text in texts:
             text.set_color(label_color)
             text.set_weight('bold')
 
-        # Testo percentuali interne in bianco per visibilità
         for autotext in autotexts:
             autotext.set_color('white')
             autotext.set_weight('bold')
 
-        ax.axis("equal")  # cerchio perfetto
+        ax.axis("equal")
 
         st.pyplot(fig)
     else:
