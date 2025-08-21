@@ -145,27 +145,39 @@ if not df.empty:
         ax.axis('equal')
         st.pyplot(fig)
 
-        col1, col2 = st.columns(2)
+        # --- Forziamo le metric affiancate anche su mobile ---
+        st.markdown(
+            """
+            <style>
+            .stColumns {flex-wrap: nowrap;}
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
 
-        # --- Percentuale speso: freccia giù rossa, valore negativo ---
+        col1, col2 = st.columns([1,1])
+
+        # --- Percentuale speso ---
         with col1:
             st.metric(
                 label="Speso",
                 value=f"{percent_speso:.1f}%",
-                delta=-totale_spese_valore,  # negativo
-                delta_color="normal"         # freccia giù rossa
+                delta=-totale_spese_valore,
+                delta_color="inverse"
             )
-            st.caption(f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €")
+            st.markdown(f"<span style='color:#111111; font-size:13px;'>{format_currency(totale_spese_valore)} €</span>",
+                        unsafe_allow_html=True)
 
-        # --- Percentuale disponibile: freccia su verde ---
+        # --- Percentuale disponibile ---
         with col2:
             st.metric(
                 label="Disponibile",
                 value=f"{percent_disp:.1f}%",
-                delta=restante,   # positivo
-                delta_color="normal"  # freccia su verde
+                delta=restante,
+                delta_color="normal"
             )
-            st.caption(f"{format_currency(restante)} € disponibile")
+            st.markdown(f"<span style='color:#111111; font-size:13px;'>{format_currency(restante)} €</span>",
+                        unsafe_allow_html=True)
 
     else:
         st.info("Nessuna spesa registrata.")
