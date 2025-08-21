@@ -147,11 +147,11 @@ if not df.empty:
         ax.axis("equal")
         st.pyplot(fig)
 
-        # Pillole con sfondo chiaro e testo colorato
+        # Pillole con colori tonalità simili all'immagine
         pillola_speso = f"""
         <div style="
             display: inline-block;
-            background-color: #fbeaea;    /* rosso chiaro */
+            background-color: #fde2e2;    /* rosso molto chiaro */
             border-radius: 16px;
             padding: 6px 16px;
             font-weight: 600;
@@ -168,11 +168,11 @@ if not df.empty:
         pillola_disponibile = f"""
         <div style="
             display: inline-block;
-            background-color: #e7faf2;    /* verde chiaro */
+            background-color: #e6f8ee;    /* verde molto chiaro */
             border-radius: 16px;
             padding: 6px 16px;
             font-weight: 600;
-            color: #27ae60;               /* testo verde */
+            color: #2ecc71;               /* testo verde */
             font-size: 16px;
             font-family: inherit;
             white-space: nowrap;
