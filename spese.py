@@ -147,38 +147,40 @@ if not df.empty:
         ax.axis("equal")
         st.pyplot(fig)
 
-        # Pillole con colori tonalità coerenti con delta
+        # Pillole dimensioni e stile come risparmio raggiunto
         pillola_speso = f"""
-        <div style="
+        <span style="
             display: inline-block;
-            background-color: #fde2e2;    /* rosso molto chiaro */
+            background-color: #fde2e2;
             border-radius: 16px;
-            padding: 6px 16px;
+            padding: 2px 10px;
             font-weight: 600;
-            color: #e74c3c;               /* testo rosso */
-            font-size: 16px;
+            color: #e74c3c;
+            font-size: 14px;
             font-family: inherit;
+            line-height: 1.2;
             white-space: nowrap;
-            margin-right: 12px;
+            margin-right: 8px;
         ">
             Speso: {format_currency(totale_spese_valore)}&nbsp;€
-        </div>
+        </span>
         """
 
         pillola_disponibile = f"""
-        <div style="
+        <span style="
             display: inline-block;
-            background-color: #e6f8ee;    /* verde molto chiaro */
+            background-color: #e6f8ee;
             border-radius: 16px;
-            padding: 6px 16px;
+            padding: 2px 10px;
             font-weight: 600;
-            color: #27ae60;               /* testo verde delta */
-            font-size: 16px;
+            color: #27ae60;
+            font-size: 14px;
             font-family: inherit;
+            line-height: 1.2;
             white-space: nowrap;
         ">
             Disponibile: {format_currency(restante)}&nbsp;€
-        </div>
+        </span>
         """
 
         st.markdown(f"{pillola_speso}{pillola_disponibile}", unsafe_allow_html=True)
