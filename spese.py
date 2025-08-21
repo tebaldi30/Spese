@@ -106,21 +106,16 @@ if not df.empty:
     st.header("📊 Riepilogo Spese")
     spese = df[df["Tipo"] == "Spesa"].copy()
     if not spese.empty:
-        spese["Importo"] = clean_importo(spese["Importo"])
-        spese["Importo"] = spese["Importo"].apply(format_currency)  # <--- FORMATTING
-        st.dataframe(spese)
+        spese["Importo_num"] = clean_importo(spese["Importo"])
+        spese["Importo"] = spese["Importo_num"].apply(format_currency)
+        st.dataframe(spese.drop(columns="Importo_num"))
 
-        totale_spese = spese["Importo"].apply(
-            lambda x: float(x.replace(".", "").replace(",", "."))
-        ).sum()
+        totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
         spese["Data"] = pd.to_datetime(spese["Data"], errors="coerce")
         spese["Mese"] = spese["Data"].dt.to_period("M")
-        # Per il grafico servono valori numerici, quindi usare clean_importo sul gruppo!
-        spese_mensili = spese.groupby("Mese")["Importo"].apply(
-            lambda x: pd.Series(x).replace("\.", "", regex=True).replace(",", ".", regex=True).astype(float).sum()
-        )
+        spese_mensili = spese.groupby("Mese")["Importo_num"].sum()
 
         st.subheader("📉 Andamento Spese Mensili")
         fig, ax = plt.subplots()
@@ -133,25 +128,23 @@ if not df.empty:
     st.header("💰 Riepilogo Risparmi")
     risp = df[df["Tipo"] == "Risparmio"].copy()
     if not risp.empty:
-        risp["Importo"] = clean_importo(risp["Importo"])
-        risp["Importo"] = risp["Importo"].apply(format_currency)  # <--- FORMATTING
-        st.dataframe(risp)
+        risp["Importo_num"] = clean_importo(risp["Importo"])
+        risp["Importo"] = risp["Importo_num"].apply(format_currency)
+        st.dataframe(risp.drop(columns="Importo_num"))
 
-        totale_risparmi = risp["Importo"].apply(
-            lambda x: float(x.replace(".", "").replace(",", "."))
-        ).sum()
+        totale_risparmi = risp["Importo_num"].sum()
         st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
 
-        risp["Data"] = pd.to_datetime(risp["Data"], errors="coerce")
-        risp["Mese"] = risp["Data"].dt.to_period("M")
-        risp_mensili = risp.groupby("Mese")["Importo"].apply(
-            lambda x: pd.Series(x).replace("\.", "", regex=True).replace(",", ".", regex=True).astype(float).sum()
-        )
+        # Visualizza percentuale raggiunta sull'obiettivo di €40.000
+        obiettivo_risparmio = 40000.0
+        percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
 
-        st.subheader("📈 Andamento Risparmi Mensili")
-        fig, ax = plt.subplots()
-        risp_mensili.plot(kind="bar", ax=ax, color="green", alpha=0.7)
-        st.pyplot(fig)
+        st.subheader("🎯 Percentuale Obiettivo Risparmi")
+        st.metric(
+            label="Risparmio raggiunto",
+            value=f"{percentuale_raggiunta:.1f}%",
+            delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
+        )
     else:
         st.info("Nessun risparmio registrato.")
 
