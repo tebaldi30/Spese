@@ -114,7 +114,7 @@ if not df.empty:
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
         # Grafico a torta spese vs budget 2000 € elegante
-        st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
+        st.subheader("📊 Andamento Spese Mensili")
 
         soglia_massima = 2000.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
@@ -176,3 +176,4 @@ if not df.empty:
 
 else:
     st.info("Nessun dato ancora inserito.")
+
