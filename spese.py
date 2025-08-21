@@ -113,7 +113,7 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2.000 €
+        # Grafico a torta spese vs budget 2000 € con etichette verdi esterne leggibili
         st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
         soglia_massima = 2000.0
@@ -121,7 +121,10 @@ if not df.empty:
         restante = soglia_massima - totale_spese_valore
 
         valori = [totale_spese_valore, restante]
-        colori = ["#e74c3c", "#27ae60"]
+        colori = ["#e74c3c", "#27ae60"]  # rosso caldo e verde moderno
+        etichette = [f"Speso {format_currency(totale_spese_valore)} €", f"Disponibile {format_currency(restante)} €"]
+
+        label_color = "#27ae60"  # Verde usato come colore delle metriche (leggibile in dark e light)
 
         fig, ax = plt.subplots()
 
@@ -130,7 +133,7 @@ if not df.empty:
 
         wedges, texts, autotexts = ax.pie(
             valori,
-            labels=None,
+            labels=etichette,
             colors=colori,
             autopct="%1.1f%%",
             startangle=90,
@@ -139,43 +142,19 @@ if not df.empty:
             textprops={'color': 'white', 'weight': 'bold'}
         )
 
-        ax.axis("equal")
+        # Imposta colore verde leggibile per le etichette esterne
+        for text in texts:
+            text.set_color(label_color)
+            text.set_weight('bold')
+
+        # Testo percentuali interne in bianco per visibilità
+        for autotext in autotexts:
+            autotext.set_color('white')
+            autotext.set_weight('bold')
+
+        ax.axis("equal")  # cerchio perfetto
 
         st.pyplot(fig)
-
-        # Etichette verdi affiancate, stile "st.metric"
-        st.markdown(
-            """
-            <div style='display: flex; gap: 12px; margin-bottom:16px; margin-top:8px;'>
-                <div style='
-                    background-color: #EAF8F1;
-                    border-radius: 18px;
-                    padding: 5px 14px;
-                    color: #299F63;
-                    font-size: 16px;
-                    font-weight: 500;
-                    display:inline-block;
-                    border: 1.5px solid #B3E2CA;
-                    '>
-                    Speso {} €
-                </div>
-                <div style='
-                    background-color: #EAF8F1;
-                    border-radius: 18px;
-                    padding: 5px 14px;
-                    color: #299F63;
-                    font-size: 16px;
-                    font-weight: 500;
-                    display:inline-block;
-                    border: 1.5px solid #B3E2CA;
-                    '>
-                    Disponibile {} €
-                </div>
-            </div>
-            """.format(format_currency(totale_spese_valore), format_currency(restante)),
-            unsafe_allow_html=True
-        )
-
     else:
         st.info("Nessuna spesa registrata.")
 
