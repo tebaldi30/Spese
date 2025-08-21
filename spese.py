@@ -123,6 +123,9 @@ if not df.empty:
         percent_speso = (totale_spese_valore / soglia_massima) * 100 if soglia_massima else 0
         percent_disp = 100 - percent_speso
 
+        # --- Titolo sopra il grafico a torta ---
+        st.subheader("📈 Andamento Mensile")
+
         fig, ax = plt.subplots()
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
@@ -144,18 +147,6 @@ if not df.empty:
 
         ax.axis('equal')
         st.pyplot(fig)
-
-        # --- Aggiunta CSS per mantenere metric affiancate su mobile ---
-        st.markdown(
-            """
-            <style>
-            .stColumns { 
-                flex-wrap: nowrap !important; 
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
 
         col1, col2 = st.columns(2)
 
