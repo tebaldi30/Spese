@@ -23,39 +23,25 @@ def carica_dati():
 def salva_dato(tipo, data, importo, categoria=""):
     sheet.append_row([tipo, str(data), importo, categoria])
 
-# ✅ Funzione aggiornata per gestire importi > 999,00 €
 def clean_importo(series):
     return pd.to_numeric(
         series.astype(str)
         .str.replace("€", "")
-        .str.replace(".", "", regex=False)   # rimuove separatori migliaia
+        .str.replace(".", "", regex=False)   # elimina separatore migliaia
         .str.replace(",", ".", regex=False)  # converte la virgola in punto
         .str.strip(),
         errors="coerce"
     )
+
+def format_currency(value):
+    """Formatta il numero in stile italiano: 1.200,00"""
+    return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 # --- Interfaccia ---
 st.title("💰 Gestione Spese e Risparmi")
 
 # Carico i dati esistenti
 df = carica_dati()
-
-# --- Allerta visiva spese ---
-if not df.empty:
-    totale_spese = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"]).sum()
-    if pd.isna(totale_spese):
-        totale_spese = 0.0
-
-    colore = "green" if totale_spese < 2000 else "red"
-    st.markdown(
-        f"""
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:20px;height:20px;border-radius:50%;background:{colore};"></div>
-            <span style="font-size:18px;">Allerta Spese: {round(totale_spese,2)} €</span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 
 # Form spese
 st.subheader("➖ Aggiungi Spesa")
@@ -98,9 +84,33 @@ if not df.empty:
         totale_risparmi = 0.0
 
     col1, col2 = st.columns(2)
-    col1.metric("Totale Spese", round(totale_spese, 2), "€")
-    col2.metric("Totale Risparmi", round(totale_risparmi, 2), "€")
+    col1.metric("Totale Spese", format_currency(totale_spese) + " €")
+    col2.metric("Totale Risparmi", format_currency(totale_risparmi) + " €")
 
+    # --- Allerta con pallina lampeggiante ---
+    colore = "green" if totale_spese < 2000 else "red"
+    animazione = """
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+        .blinking {
+            animation: blink 1s infinite;
+        }
+    """
+    st.markdown(f"<style>{animazione}</style>", unsafe_allow_html=True)
+
+    st.markdown(
+        f"""
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:20px;height:20px;border-radius:50%;background:{colore};"
+                 class="{'blinking' if colore == 'red' else ''}"></div>
+            <span style="font-size:18px;">Allerta Spese: {format_currency(totale_spese)} €</span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # --- Grafico ---
     df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
     df["Mese"] = df["Data"].dt.to_period("M")
 
