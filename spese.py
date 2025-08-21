@@ -18,16 +18,10 @@ sheet = connect_gsheets()
 # --- Funzioni ---
 def carica_dati():
     records = sheet.get_all_records()
-    df = pd.DataFrame(records)
-    if not df.empty:
-        # Converte la colonna 'Data' nel formato gg,mm,aaaa
-        df['Data'] = pd.to_datetime(df['Data'], errors='coerce').dt.strftime('%d,%m,%Y')
-    return df
+    return pd.DataFrame(records)
 
 def salva_dato(tipo, data, importo, categoria=""):
-    # Converte la data in formato gg,mm,aaaa
-    data_formattata = data.strftime("%d,%m,%Y")
-    sheet.append_row([tipo, data_formattata, importo, categoria])
+    sheet.append_row([tipo, str(data), importo, categoria])
 
 def clean_importo(series):
     return pd.to_numeric(
@@ -89,7 +83,7 @@ with st.form("spese_form", clear_on_submit=True):
     submitted_spesa = st.form_submit_button("Aggiungi Spesa")
     if submitted_spesa and valore_spesa > 0:
         salva_dato("Spesa", data_spesa, valore_spesa, tipo_spesa)
-        st.success(f"Spesa registrata! ({data_spesa.strftime('%d,%m,%Y')})")
+        st.success("Spesa registrata!")
 
 # --- Form risparmi ---
 st.subheader("💵 Gestione Risparmi")
@@ -102,7 +96,7 @@ with st.form("risparmi_form", clear_on_submit=True):
         if tipo_risp == "Prelievo":
             valore_risp = -valore_risp
         salva_dato("Risparmio", data_risp, valore_risp, tipo_risp)
-        st.success(f"{tipo_risp} registrato! ({data_risp.strftime('%d,%m,%Y')})")
+        st.success(f"{tipo_risp} registrato!")
 
 # --- Aggiorna dati ---
 df = carica_dati()
@@ -190,7 +184,7 @@ if not df.empty:
         totale_risparmi = risp["Importo_num"].sum()
         st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
 
-        obiettivo_risparmio = 30000.0
+        obiettivo_risparmio = 40000.0
         percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
         st.subheader("🎯 Percentuale Obiettivo Risparmi")
         st.metric(
