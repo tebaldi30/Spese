@@ -164,25 +164,34 @@ if not df.empty:
         if "show_risparmi" not in st.session_state:
             st.session_state.show_risparmi = True
 
-        # Colonne per allineare metrica e occhio sulla stessa riga
-        col1, col2 = st.columns([5,1])
-        with col1:
-            st.subheader("🎯 Percentuale Obiettivo Risparmi")
-            if st.session_state.show_risparmi:
-                st.metric(
-                    label="Risparmio raggiunto",
-                    value=f"{percentuale_raggiunta:.1f}%",
-                    delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
-                )
-            else:
-                st.metric("Risparmio raggiunto", value="•••••", delta="•••••")
+        # --- Metrica + occhio sulla stessa riga usando HTML ---
+        img_path = "occhio_aperto.png" if st.session_state.show_risparmi else "occhio_chiuso.png"
+        risparmi_html = f"""
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="text-align:left;">
+                <h4 style="margin:0;">Risparmio raggiunto</h4>
+                <p style="margin:0; font-size:20px;">
+                    {"{:.1f}%".format(percentuale_raggiunta) if st.session_state.show_risparmi else "•••••"}
+                </p>
+                <p style="margin:0; font-size:12px; color:gray;">
+                    {format_currency(totale_risparmi) + " € su " + format_currency(obiettivo_risparmio) + " €" if st.session_state.show_risparmi else "•••••"}
+                </p>
+            </div>
+            <form method="post">
+                <input type="image" src="{img_path}" width="30" style="border:none; cursor:pointer;" name="toggle_occhio">
+            </form>
+        </div>
+        """
+        st.markdown(risparmi_html, unsafe_allow_html=True)
 
-        with col2:
-            # L'immagine è il bottone stesso
-            img_path = "occhio_aperto.png" if st.session_state.show_risparmi else "occhio_chiuso.png"
-            if st.button("", key="occhio_toggle", help="Clicca per mostrare/nascondere i risparmi"):
-                st.session_state.show_risparmi = not st.session_state.show_risparmi
-            st.image(img_path, width=30)
+        # Toggle stato cliccando sull'immagine
+        if "toggle_occhio_clicked" not in st.session_state:
+            st.session_state.toggle_occhio_clicked = False
+
+        if st.experimental_get_query_params().get("toggle_occhio") or st.session_state.toggle_occhio_clicked:
+            st.session_state.show_risparmi = not st.session_state.show_risparmi
+            st.session_state.toggle_occhio_clicked = False
+            st.experimental_rerun()
 
     else:
         st.info("Nessun risparmio registrato.")
