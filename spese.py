@@ -147,13 +147,13 @@ if not df.empty:
 
         col1, col2 = st.columns(2)
 
-        # --- Percentuale speso: freccia giù rossa con delta negativo + inverse ---
+        # --- Percentuale speso: freccia giù rossa, valore negativo ---
         with col1:
             st.metric(
                 label="Speso",
                 value=f"{percent_speso:.1f}%",
                 delta=-totale_spese_valore,  # negativo
-                delta_color="inverse"        # freccia giù rossa
+                delta_color="normal"         # freccia giù rossa
             )
             st.caption(f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €")
 
