@@ -145,30 +145,31 @@ if not df.empty:
         ax.axis('equal')
         st.pyplot(fig)
 
-        # --- Forziamo le metric affiancate anche su mobile ---
+        # --- Aggiunta CSS per mantenere metric affiancate su mobile ---
         st.markdown(
             """
             <style>
-            .stColumns {flex-wrap: nowrap;}
+            .stColumns { 
+                flex-wrap: nowrap !important; 
+            }
             </style>
             """,
             unsafe_allow_html=True
         )
 
-        col1, col2 = st.columns([1,1])
+        col1, col2 = st.columns(2)
 
-        # --- Percentuale speso ---
+        # --- Percentuale speso: freccia giù rossa, valore negativo ---
         with col1:
             st.metric(
                 label="Speso",
                 value=f"{percent_speso:.1f}%",
                 delta=-totale_spese_valore,
-                delta_color="inverse"
+                delta_color="normal"
             )
-            st.markdown(f"<span style='color:#111111; font-size:13px;'>{format_currency(totale_spese_valore)} €</span>",
-                        unsafe_allow_html=True)
+            st.caption(f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €")
 
-        # --- Percentuale disponibile ---
+        # --- Percentuale disponibile: freccia su verde ---
         with col2:
             st.metric(
                 label="Disponibile",
@@ -176,8 +177,7 @@ if not df.empty:
                 delta=restante,
                 delta_color="normal"
             )
-            st.markdown(f"<span style='color:#111111; font-size:13px;'>{format_currency(restante)} €</span>",
-                        unsafe_allow_html=True)
+            st.caption(f"{format_currency(restante)} € disponibile")
 
     else:
         st.info("Nessuna spesa registrata.")
@@ -195,7 +195,6 @@ if not df.empty:
 
         obiettivo_risparmio = 40000.0
         percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
-
         st.subheader("🎯 Percentuale Obiettivo Risparmi")
         st.metric(
             label="Risparmio raggiunto",
@@ -204,6 +203,5 @@ if not df.empty:
         )
     else:
         st.info("Nessun risparmio registrato.")
-
 else:
     st.info("Nessun dato ancora inserito.")
