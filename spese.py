@@ -7,9 +7,15 @@ from oauth2client.service_account import ServiceAccountCredentials
 # --- Connessione a Google Sheets ---
 @st.cache_resource
 def connect_gsheets():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(
+        st.secrets["gcp_service_account"], scope
+    )
     client = gspread.authorize(creds)
+    # Sostituisci con il tuo Google Sheet ID
     sheet = client.open_by_key("1Wf8A8BkTPJGrQmJca35_Spsbj1HJxmZoLffkreqGkrM").sheet1  
     return sheet
 
@@ -24,13 +30,23 @@ def salva_dato(tipo, data, importo, categoria=""):
     sheet.append_row([tipo, str(data), importo, categoria])
 
 def clean_importo(series):
-    return pd.to_numeric(series.astype(str).str.replace("€", "").str.replace(",", ".").str.strip(), errors='coerce')
+    return pd.to_numeric(
+        series.astype(str)
+        .str.replace("€", "")
+        .str.replace(",", ".")
+        .str.strip(),
+        errors="coerce"
+    )
 
 # --- Interfaccia ---
 st.title("💰 Gestione Spese e Risparmi")
 
 # Carico i dati esistenti
-df = carica_dati()
+try:
+    df = carica_dati()
+except Exception as e:
+    st.error("Errore nel caricamento dati: controlla credenziali o Google Sheet")
+    df = pd.DataFrame(columns=["Tipo", "Data", "Importo", "Categoria"])
 
 # Form spese
 st.subheader("➖ Aggiungi Spesa")
@@ -64,18 +80,14 @@ if not df.empty:
     spese_importo = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"])
     risparmi_importo = clean_importo(df[df["Tipo"] == "Risparmio"]["Importo"])
 
-    totale_spese = spese_importo.sum()
-    totale_risparmi = risparmi_importo.sum()
-
-    if pd.isna(totale_spese):
-        totale_spese = 0.0
-    if pd.isna(totale_risparmi):
-        totale_risparmi = 0.0
+    totale_spese = spese_importo.sum() if not pd.isna(spese_importo.sum()) else 0.0
+    totale_risparmi = risparmi_importo.sum() if not pd.isna(risparmi_importo.sum()) else 0.0
 
     col1, col2 = st.columns(2)
-    col1.metric("Totale Spese", round(totale_spese, 2), "€")
-    col2.metric("Totale Risparmi", round(totale_risparmi, 2), "€")
+    col1.metric("Totale Spese", f"{round(totale_spese, 2)} €")
+    col2.metric("Totale Risparmi", f"{round(totale_risparmi, 2)} €")
 
+    # --- Grafico ---
     df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
     df["Mese"] = df["Data"].dt.to_period("M")
 
@@ -89,6 +101,7 @@ if not df.empty:
     ax.legend()
     st.pyplot(fig)
 
+    # --- Conteggio movimenti ---
     conteggio_spese = len(df[df["Tipo"] == "Spesa"])
     conteggio_risparmi = len(df[df["Tipo"] == "Risparmio"])
 
@@ -99,5 +112,3 @@ if not df.empty:
 
 else:
     st.info("Nessun dato ancora inserito.")
-
-
