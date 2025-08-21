@@ -60,7 +60,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-colore = "green" if totale_spese < 2500 else "red"
+colore = "green" if totale_spese < 2000 else "red"
 classe = "blinking" if colore == "red" else ""
 
 st.markdown(
@@ -196,6 +196,7 @@ if not df.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
