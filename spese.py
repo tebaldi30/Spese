@@ -184,7 +184,7 @@ if not df.empty:
         totale_risparmi = risp["Importo_num"].sum()
         st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
 
-        obiettivo_risparmio = 20000.0
+        obiettivo_risparmio = 30000.0
         percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
         st.subheader("🎯 Percentuale Obiettivo Risparmi")
         st.metric(
@@ -196,5 +196,6 @@ if not df.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
