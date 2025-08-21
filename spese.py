@@ -27,8 +27,8 @@ def clean_importo(series):
     return pd.to_numeric(
         series.astype(str)
         .str.replace("€", "")
-        .str.replace(".", "", regex=False)   # elimina separatore migliaia
-        .str.replace(",", ".", regex=False)  # converte la virgola in punto
+        .str.replace(".", "", regex=False)
+        .str.replace(",", ".", regex=False)
         .str.strip(),
         errors="coerce"
     )
@@ -113,29 +113,44 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2000 € con etichette personalizzate
-        st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
-
+        # Effetto pillola sopra il grafico spese
         soglia_massima = 2000.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
         restante = soglia_massima - totale_spese_valore
 
-        valori = [totale_spese_valore, restante]
-        colori = ["#e74c3c", "#27ae60"]  # rosso e verde
+        pillola_html = f"""
+        <div style="
+            display: inline-block;
+            background-color: #e7faf2;
+            border-radius: 16px;
+            padding: 6px 16px;
+            font-weight: 600;
+            color: #27ae60;
+            font-size: 16px;
+            font-family: inherit;
+            white-space: nowrap;
+            margin-bottom: 12px;
+        ">
+            {format_currency(totale_spese_valore)}&nbsp;€ su&nbsp;{format_currency(soglia_massima)}&nbsp;€
+        </div>
+        """
+        st.markdown(pillola_html, unsafe_allow_html=True)
 
-        # Funzione per formattare etichette “Speso 18.500,00 € su 40.000,00 €”
-        def get_label_text(titolo, importo, totale):
-            return f"{titolo} {format_currency(importo)} € su {format_currency(totale)} €"
+        # Grafico a torta spese vs budget 2000 € con etichette numeriche verdi senza testo aggiuntivo
+        valori = [totale_spese_valore, restante]
+        colori = ["#e74c3c", "#27ae60"]
+
+        def get_label_text(importo, totale):
+            return f"{format_currency(importo)}\u202f€ su {format_currency(totale)}\u202f€"
 
         etichette = [
-            get_label_text("Speso", totale_spese_valore, soglia_massima),
-            get_label_text("Disponibile", restante, soglia_massima)
+            get_label_text(totale_spese_valore, soglia_massima),
+            get_label_text(restante, soglia_massima)
         ]
 
-        label_color = "#27ae60"  # Verde per testo etichette
+        label_color = "#27ae60"
 
         fig, ax = plt.subplots()
-
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
 
@@ -159,8 +174,8 @@ if not df.empty:
             autotext.set_weight('bold')
 
         ax.axis("equal")
-
         st.pyplot(fig)
+
     else:
         st.info("Nessuna spesa registrata.")
 
