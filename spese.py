@@ -6,8 +6,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 # --- UTENTI E PASSWORD (esempio) ---
 USERS = {
-    "mario": "password123",
-    "luca": "pass456"
+    "gabriel": "12345678",
+    "maciele": "12345678"
 }
 
 # --- Controlla login ---
@@ -221,3 +221,4 @@ else:
             st.info("Nessun risparmio registrato.")
     else:
         st.info("Nessun dato ancora inserito.")
+
