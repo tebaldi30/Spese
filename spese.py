@@ -117,9 +117,19 @@ if not df.empty:
         spese["Mese"] = spese["Data"].dt.to_period("M")
         spese_mensili = spese.groupby("Mese")["Importo_num"].sum()
 
+        # Grafico spese con soglia massima rappresentata
         st.subheader("📉 Andamento Spese Mensili")
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10, 5))
         spese_mensili.plot(kind="bar", ax=ax, color="red", alpha=0.7)
+
+        # Linea orizzontale per soglia massima 2000 €
+        ax.axhline(y=2000, color='blue', linestyle='--', linewidth=2)
+
+        ax.set_title("Spese Mensili", fontsize=16, fontweight='bold')
+        ax.set_xlabel("Mese", fontsize=12)
+        ax.set_ylabel("Importo (€)", fontsize=12)
+        ax.grid(axis='y', linestyle='--', alpha=0.6)
+
         st.pyplot(fig)
     else:
         st.info("Nessuna spesa registrata.")
@@ -135,7 +145,6 @@ if not df.empty:
         totale_risparmi = risp["Importo_num"].sum()
         st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
 
-        # Visualizza percentuale raggiunta sull'obiettivo di €40.000
         obiettivo_risparmio = 40000.0
         percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
 
