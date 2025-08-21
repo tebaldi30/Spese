@@ -147,25 +147,25 @@ if not df.empty:
 
         col1, col2 = st.columns(2)
 
-        # --- Percentuale speso (freccia giù, rosso, testo formattato) ---
+        # --- Percentuale speso (freccia giù, rosso, sfondo chiaro) ---
         with col1:
             st.markdown(f"""
                 <div style="font-weight:600; font-size:24px; color:#e74c3c;">
-                    {percent_speso:.1f}% &#x25BC;<br>
-                    <span style="font-weight:400; font-size:14px;">
-                        {format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €
-                    </span>
+                    {percent_speso:.1f}% &#x25BC;
+                </div>
+                <div style="background-color:#fce5e0; padding:5px 10px; border-radius:5px; display:inline-block; font-size:14px;">
+                    {format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €
                 </div>
             """, unsafe_allow_html=True)
 
-        # --- Percentuale disponibile (freccia su, verde, testo formattato) ---
+        # --- Percentuale disponibile (freccia su, verde, sfondo chiaro) ---
         with col2:
             st.markdown(f"""
                 <div style="font-weight:600; font-size:24px; color:#27ae60;">
-                    {percent_disp:.1f}% &#x25B2;<br>
-                    <span style="font-weight:400; font-size:14px;">
-                        {format_currency(restante)} € disponibile
-                    </span>
+                    {percent_disp:.1f}% &#x25B2;
+                </div>
+                <div style="background-color:#e0f7e9; padding:5px 10px; border-radius:5px; display:inline-block; font-size:14px;">
+                    {format_currency(restante)} € disponibile
                 </div>
             """, unsafe_allow_html=True)
 
