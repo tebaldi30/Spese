@@ -1,12 +1,8 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-import matplotlib
-matplotlib.use("Agg")  # backend sicuro per Streamlit Cloud
-from matplotlib.figure import Figure
-import time
 
 # --- Connessione a Google Sheets ---
 @st.cache_resource
@@ -38,6 +34,7 @@ def clean_importo(series):
     )
 
 def format_currency(value):
+    """Formatta il numero in stile italiano: 1.200,00"""
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 # --- Carico i dati ---
@@ -111,56 +108,28 @@ if not df.empty:
     if not spese.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
+        st.dataframe(spese.drop(columns="Importo_num"))
 
-        # Configura AG Grid con checkbox
-        gb = GridOptionsBuilder.from_dataframe(spese)
-        gb.configure_selection('single', use_checkbox=True)
-        grid_options = gb.build()
-
-        # Mostra tabella
-        grid_response = AgGrid(
-            spese,
-            gridOptions=grid_options,
-            update_mode=GridUpdateMode.SELECTION_CHANGED,
-            allow_unsafe_jscode=True,
-            height=300
-        )
-
-        # Bottone per cancellare riga selezionata con check indice e delay
-        if st.button("🗑️ Cancella riga selezionata"):
-            if grid_response['selected_rows']:
-                row = grid_response['selected_rows'][0]
-                row_index = spese.index[spese["Data"]==row["Data"]][0] + 2  # +2 per header
-                try:
-                    all_rows = sheet.get_all_values()
-                    if row_index <= len(all_rows):
-                        sheet.delete_rows(row_index)
-                        time.sleep(1)  # Delay per sicurezza API
-                        placeholder = st.empty()
-                        placeholder.success("✅ Spesa cancellata!")
-                        time.sleep(2)
-                        placeholder.empty()
-                        st.experimental_rerun()
-                    else:
-                        st.warning("La riga selezionata non esiste più.")
-                except Exception as e:
-                    st.error(f"Errore durante la cancellazione: {e}")
-            else:
-                st.warning("Seleziona una riga prima di cancellare!")
-
-        # Aggiorna metriche
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # --- Andamento Mensile ---
         soglia_massima = 2000.0
-        totale_spese_valore = min(totale_spese, soglia_massima)
+        totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
         restante = soglia_massima - totale_spese_valore
+
         valori = [totale_spese_valore, restante]
         colori = ["#e74c3c", "#27ae60"]
 
-        fig = Figure(figsize=(4,4))
-        ax = fig.add_subplot(111)
+        percent_speso = (totale_spese_valore / soglia_massima) * 100 if soglia_massima else 0
+        percent_disp = 100 - percent_speso
+
+        # --- Titolo sopra il grafico a torta ---
+        st.subheader("📈 Andamento Mensile")
+
+        fig, ax = plt.subplots()
+        fig.patch.set_alpha(0.0)
+        ax.patch.set_alpha(0.0)
+
         wedges, texts, autotexts = ax.pie(
             valori,
             colors=colori,
@@ -172,24 +141,30 @@ if not df.empty:
             wedgeprops={'edgecolor': 'white', 'linewidth': 2},
             textprops={'color': 'black', 'weight': 'bold'}
         )
+
         for text in texts:
             text.set_text('')
+
         ax.axis('equal')
         st.pyplot(fig)
 
         col1, col2 = st.columns(2)
+
+        # --- Percentuale speso: freccia giù rossa, valore negativo ---
         with col1:
             st.metric(
                 label="Speso",
-                value=f"{(totale_spese_valore/soglia_massima*100):.1f}%",
+                value=f"{percent_speso:.1f}%",
                 delta=-totale_spese_valore,
                 delta_color="normal"
             )
             st.caption(f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €")
+
+        # --- Percentuale disponibile: freccia su verde ---
         with col2:
             st.metric(
                 label="Disponibile",
-                value=f"{(restante/soglia_massima*100):.1f}%",
+                value=f"{percent_disp:.1f}%",
                 delta=restante,
                 delta_color="normal"
             )
