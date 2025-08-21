@@ -25,23 +25,26 @@ def login_page():
         else:
             st.error("Username o password errati")
 
-# --- Connessione a Google Sheets (veloce con cache) ---
+# --- Connessione a Google Sheets (cached) ---
 @st.cache_resource
 def connect_gsheets():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gcp_service_account"], scope)
     client = gspread.authorize(creds)
-    sheet = client.open_by_key("1Wf8A8BkTPJGrQmJca35_Spsbj1HJxmZoLffkreqGkrM").sheet1
-    return sheet
+    return client
 
-# --- Carica dati in cache (veloce) ---
+# --- Carica dati in cache ---
 @st.cache_data(ttl=60)
-def carica_dati(sheet):
+def carica_dati(sheet_key):
+    client = connect_gsheets()
+    sheet = client.open_by_key(sheet_key).sheet1
     records = sheet.get_all_records()
     return pd.DataFrame(records)
 
 # --- Funzioni ---
-def salva_dato(sheet, tipo, data, importo, categoria=""):
+def salva_dato(sheet_key, tipo, data, importo, categoria=""):
+    client = connect_gsheets()
+    sheet = client.open_by_key(sheet_key).sheet1
     sheet.append_row([tipo, str(data), importo, categoria])
 
 def clean_importo(series):
@@ -58,7 +61,7 @@ def format_currency(value):
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 # --- Funzione principale app ---
-def main_app(df, sheet):
+def main_app(df, sheet_key):
     st.title(f"💰 Gestione Spese e Risparmi - Benvenuto {st.session_state.username}")
 
     # Logout
@@ -69,24 +72,18 @@ def main_app(df, sheet):
 
     # --- Pallina sotto il titolo ---
     totale_spese = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"]).sum() if not df.empty else 0.0
-    st.markdown(
-        """
+    st.markdown("""
         <style>
         @keyframes blink {50% { opacity: 0; }}
         .blinking {animation: blink 1s infinite;}
-        </style>
-        """, unsafe_allow_html=True
-    )
+        </style>""", unsafe_allow_html=True)
     colore = "green" if totale_spese < 2000 else "red"
     classe = "blinking" if colore == "red" else ""
-    st.markdown(
-        f"""
+    st.markdown(f"""
         <div style="display:flex;align-items:center;gap:10px;margin-top:5px;">
             <div style="width:20px;height:20px;border-radius:50%;background:{colore};" class="{classe}"></div>
             <span style="font-size:16px;">Totale Spese: {format_currency(totale_spese)} €</span>
-        </div>
-        """, unsafe_allow_html=True
-    )
+        </div>""", unsafe_allow_html=True)
 
     # --- Form spese ---
     st.subheader("➖ Aggiungi Spesa")
@@ -95,7 +92,7 @@ def main_app(df, sheet):
         tipo_spesa = st.text_input("Categoria (es. affitto, cibo, bollette)")
         valore_spesa = st.number_input("Importo (€)", min_value=0.0, step=1.0)
         if st.form_submit_button("Aggiungi Spesa") and valore_spesa > 0:
-            salva_dato(sheet, "Spesa", data_spesa, valore_spesa, tipo_spesa)
+            salva_dato(sheet_key, "Spesa", data_spesa, valore_spesa, tipo_spesa)
             st.success("Spesa registrata!")
 
     # --- Form risparmi ---
@@ -107,11 +104,11 @@ def main_app(df, sheet):
         if st.form_submit_button("Registra Movimento") and valore_risp > 0:
             if tipo_risp == "Prelievo":
                 valore_risp = -valore_risp
-            salva_dato(sheet, "Risparmio", data_risp, valore_risp, tipo_risp)
+            salva_dato(sheet_key, "Risparmio", data_risp, valore_risp, tipo_risp)
             st.success(f"{tipo_risp} registrato!")
 
     # --- Aggiorna dati ---
-    df = carica_dati(sheet)
+    df = carica_dati(sheet_key)
 
     # --- Riepilogo Spese ---
     if not df.empty:
@@ -174,7 +171,7 @@ def main_app(df, sheet):
             obiettivo_risparmio = 40000.0
             percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100
             st.subheader("🎯 Percentuale Obiettivo Risparmi")
-            st.metric("Risparmio raggiunto", f"{percentuale_raggiunta:.1f}%", 
+            st.metric("Risparmio raggiunto", f"{percentuale_raggiunta:.1f}%",
                       delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €")
         else:
             st.info("Nessun risparmio registrato.")
@@ -182,9 +179,10 @@ def main_app(df, sheet):
         st.info("Nessun dato ancora inserito.")
 
 # --- Flusso principale ---
+SHEET_KEY = "1Wf8A8BkTPJGrQmJca35_Spsbj1HJxmZoLffkreqGkrM"
+
 if not st.session_state.logged_in:
     login_page()
 else:
-    sheet = connect_gsheets()       # Cache della connessione
-    df = carica_dati(sheet)         # Cache dei dati
-    main_app(df, sheet)
+    df = carica_dati(SHEET_KEY)
+    main_app(df, SHEET_KEY)
