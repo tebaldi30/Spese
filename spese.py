@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+import numpy as np
 
 # --- Connessione a Google Sheets ---
 @st.cache_resource
@@ -113,7 +114,7 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2000 € con etichette verdi esterne leggibili
+        # Grafico a torta spese vs budget 2.000 € con etichette al di fuori della torta
         st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
         soglia_massima = 2000.0
@@ -121,10 +122,7 @@ if not df.empty:
         restante = soglia_massima - totale_spese_valore
 
         valori = [totale_spese_valore, restante]
-        colori = ["#e74c3c", "#27ae60"]  # rosso caldo e verde moderno
-        etichette = [f"Speso {format_currency(totale_spese_valore)} €", f"Disponibile {format_currency(restante)} €"]
-
-        label_color = "#27ae60"  # Verde usato come colore delle metriche (leggibile in dark e light)
+        colori = ["#e74c3c", "#27ae60"]
 
         fig, ax = plt.subplots()
 
@@ -133,28 +131,49 @@ if not df.empty:
 
         wedges, texts, autotexts = ax.pie(
             valori,
-            labels=etichette,
+            labels=None,
             colors=colori,
             autopct="%1.1f%%",
             startangle=90,
             counterclock=False,
             wedgeprops={'edgecolor': 'white', 'linewidth': 2},
-            textprops={'color': 'white', 'weight': 'bold'}
+            textprops={'color': 'white', 'weight': 'bold', 'fontsize': 16}
         )
 
-        # Imposta colore verde leggibile per le etichette esterne
-        for text in texts:
-            text.set_color(label_color)
-            text.set_weight('bold')
+        ax.axis("equal")
 
-        # Testo percentuali interne in bianco per visibilità
-        for autotext in autotexts:
-            autotext.set_color('white')
-            autotext.set_weight('bold')
+        # Etichetta "Speso" in alto destra
+        angle = (wedges[0].theta2 + wedges.theta1) / 2
+        x = 1.1 * np.cos(np.deg2rad(angle))
+        y = 1.1 * np.sin(np.deg2rad(angle))
+        ax.text(
+            x,
+            y,
+            f"Speso {format_currency(totale_spese_valore)} €",
+            color="#299F63",
+            fontsize=15,
+            fontweight="bold",
+            ha="center",
+            va="center"
+        )
 
-        ax.axis("equal")  # cerchio perfetto
+        # Etichetta "Disponibile" in basso sinistra
+        angle2 = (wedges[1].theta2 + wedges[1].theta1) / 2
+        x2 = 1.1 * np.cos(np.deg2rad(angle2))
+        y2 = 1.1 * np.sin(np.deg2rad(angle2))
+        ax.text(
+            x2,
+            y2,
+            f"Disponibile {format_currency(restante)} €",
+            color="#299F63",
+            fontsize=15,
+            fontweight="bold",
+            ha="center",
+            va="center"
+        )
 
         st.pyplot(fig)
+
     else:
         st.info("Nessuna spesa registrata.")
 
