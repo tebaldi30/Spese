@@ -113,44 +113,42 @@ if not df.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
 
-        # Aggiungiamo colonna "Cestino"
-        spese["Cancella"] = "🗑️"
-
-        # Configura AG Grid
+        # Configura AG Grid con checkbox per selezione riga
         gb = GridOptionsBuilder.from_dataframe(spese)
-        gb.configure_column("Cancella", editable=False, cellRenderer='''function(params) {
-            return `<button style="background:none;border:none;font-size:16px;cursor:pointer;">🗑️</button>`;
-        }''')
-        gb.configure_selection('single', use_checkbox=False)
+        gb.configure_selection('single', use_checkbox=True)
         grid_options = gb.build()
 
-        # Mostra la tabella
+        # Mostra tabella
         grid_response = AgGrid(
             spese,
             gridOptions=grid_options,
-            update_mode=GridUpdateMode.MODEL_CHANGED,
+            update_mode=GridUpdateMode.SELECTION_CHANGED,
             allow_unsafe_jscode=True,
             height=300
         )
 
-        # Controllo click sul cestino
-        if grid_response['selected_rows']:
-            row = grid_response['selected_rows'][0]
-            row_index = spese.index[spese["Data"]==row["Data"]][0] + 2
-            try:
-                sheet.delete_rows(row_index)
-                placeholder = st.empty()
-                placeholder.success("✅ Spesa cancellata!")
-                time.sleep(2)
-                placeholder.empty()
-                st.experimental_rerun()
-            except Exception as e:
-                st.error(f"Errore durante la cancellazione: {e}")
+        # Bottone per cancellare riga selezionata
+        if st.button("🗑️ Cancella riga selezionata"):
+            if grid_response['selected_rows']:
+                row = grid_response['selected_rows'][0]
+                row_index = spese.index[spese["Data"]==row["Data"]][0] + 2  # +2 per header
+                try:
+                    sheet.delete_rows(row_index)
+                    placeholder = st.empty()
+                    placeholder.success("✅ Spesa cancellata!")
+                    time.sleep(2)
+                    placeholder.empty()
+                    st.experimental_rerun()
+                except Exception as e:
+                    st.error(f"Errore durante la cancellazione: {e}")
+            else:
+                st.warning("Seleziona una riga prima di cancellare!")
 
+        # Aggiorna metriche
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # --- Andamento Mensile (sicuro) ---
+        # --- Andamento Mensile ---
         soglia_massima = 2000.0
         totale_spese_valore = min(totale_spese, soglia_massima)
         restante = soglia_massima - totale_spese_valore
