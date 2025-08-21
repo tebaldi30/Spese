@@ -1,8 +1,8 @@
-import streamlit as st 
+import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import time
 
 # --- Connessione a Google Sheets ---
@@ -110,32 +110,36 @@ if not df.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
 
-        # Tabella con icona cestino discreta
-        for i, row in spese.iterrows():
-            col1, col2, col3, col4 = st.columns([2, 2, 2, 0.5])
-            col1.write(row["Data"])
-            col2.write(row["Categoria"])
-            col3.write(f'{row["Importo"]} €')
-            
-            if col4.button("🗑️", key=f"delete_{i}"):
-                try:
-                    index_cancellare = i + 2  # +2 per header + indice zero
-                    sheet.delete_rows(index_cancellare)
-                    
-                    # Notifica temporanea in alto
-                    placeholder = st.empty()
-                    placeholder.success("✅ Spesa cancellata!")
-                    time.sleep(2)
-                    placeholder.empty()
-                    
-                    # Ricarica subito i dati aggiornati e interrompe il ciclo
-                    df = carica_dati()
-                    spese = df[df["Tipo"] == "Spesa"].copy()
-                    spese["Importo_num"] = clean_importo(spese["Importo"])
-                    spese["Importo"] = spese["Importo_num"].apply(format_currency)
-                    break
-                except Exception as e:
-                    st.error(f"Errore durante la cancellazione: {e}")
+        # Aggiungiamo una colonna "Cestino" con testo cliccabile
+        spese["Cancella"] = "🗑️"
+
+        # Configura AG Grid
+        gb = GridOptionsBuilder.from_dataframe(spese)
+        gb.configure_column("Cancella", editable=False, cellRenderer='''function(params) {
+            return `<button style="background:none;border:none;font-size:16px;cursor:pointer;">🗑️</button>`;
+        }''')
+        gb.configure_selection('single', use_checkbox=False)
+        grid_options = gb.build()
+
+        # Mostra la tabella
+        grid_response = AgGrid(
+            spese,
+            gridOptions=grid_options,
+            update_mode=GridUpdateMode.MODEL_CHANGED,
+            allow_unsafe_jscode=True,
+            height=300
+        )
+
+        # Controllo click sul cestino
+        if grid_response['selected_rows']:
+            row = grid_response['selected_rows'][0]
+            row_index = spese.index[spese["Data"]==row["Data"]][0] + 2  # +2 per header
+            try:
+                sheet.delete_rows(row_index)
+                st.success("✅ Spesa cancellata!")
+                st.experimental_rerun()  # ricarica la pagina con tabella aggiornata
+            except Exception as e:
+                st.error(f"Errore durante la cancellazione: {e}")
 
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
