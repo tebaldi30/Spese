@@ -162,7 +162,7 @@ if not df.empty:
             )
             st.caption(f"{format_currency(restante)} € disponibile")
 
-        # --- Cancella spesa robusta con delete_rows ---
+        # --- Cancella spesa aggiornata senza experimental_rerun ---
         st.subheader("❌ Cancella Spesa")
         opzioni_cancellazione = spese.apply(lambda x: f'{x["Data"]} - {x["Categoria"]} - {x["Importo"]} €', axis=1)
         scelta = st.selectbox("Seleziona spesa da cancellare", [""] + opzioni_cancellazione.tolist())
@@ -172,9 +172,15 @@ if not df.empty:
                 try:
                     index_cancellare = int(opzioni_cancellazione[opzioni_cancellazione == scelta].index[0]) + 2
                     if index_cancellare > 1 and index_cancellare <= len(sheet.get_all_values()):
-                        sheet.delete_rows(index_cancellare)  # <--- CORRETTO
+                        sheet.delete_rows(index_cancellare)
                         st.success("Spesa cancellata!")
-                        st.experimental_rerun()
+                        # Aggiorna subito i dati e la tabella
+                        df = carica_dati()
+                        spese = df[df["Tipo"] == "Spesa"].copy()
+                        if not spese.empty:
+                            spese["Importo_num"] = clean_importo(spese["Importo"])
+                            spese["Importo"] = spese["Importo_num"].apply(format_currency)
+                            st.dataframe(spese.drop(columns="Importo_num"))
                     else:
                         st.error("Impossibile cancellare: indice fuori dal foglio.")
                 except Exception as e:
