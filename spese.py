@@ -109,11 +109,32 @@ if not df.empty:
         spese["Importo_num"] = clean_importo(spese["Importo"])
         spese["Importo"] = spese["Importo_num"].apply(format_currency)
 
-        st.dataframe(spese.drop(columns="Importo_num"))
+        # Mostra la tabella con pulsanti "Cancella"
+        st.subheader("❌ Cancella Spesa")
+        spese_display = spese.copy()
+        for i, row in spese_display.iterrows():
+            col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
+            col1.write(row["Data"])
+            col2.write(row["Categoria"])
+            col3.write(f'{row["Importo"]} €')
+            if col4.button("Cancella", key=f"del_{i}"):
+                try:
+                    index_cancellare = i + 2  # +2 per header + indice zero
+                    sheet.delete_rows(index_cancellare)
+                    st.success("Spesa cancellata!")
+                    # Ricarica i dati aggiornati
+                    df = carica_dati()
+                    spese = df[df["Tipo"] == "Spesa"].copy()
+                    spese["Importo_num"] = clean_importo(spese["Importo"])
+                    spese["Importo"] = spese["Importo_num"].apply(format_currency)
+                    break  # evita più cancellazioni nello stesso refresh
+                except Exception as e:
+                    st.error(f"Errore durante la cancellazione: {e}")
 
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
+        # Grafico andamento spese
         soglia_massima = 2000.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
         restante = soglia_massima - totale_spese_valore
@@ -161,30 +182,6 @@ if not df.empty:
                 delta_color="normal"
             )
             st.caption(f"{format_currency(restante)} € disponibile")
-
-        # --- Cancella spesa aggiornata senza experimental_rerun ---
-        st.subheader("❌ Cancella Spesa")
-        opzioni_cancellazione = spese.apply(lambda x: f'{x["Data"]} - {x["Categoria"]} - {x["Importo"]} €', axis=1)
-        scelta = st.selectbox("Seleziona spesa da cancellare", [""] + opzioni_cancellazione.tolist())
-
-        if st.button("Cancella Spesa Selezionata"):
-            if scelta:
-                try:
-                    index_cancellare = int(opzioni_cancellazione[opzioni_cancellazione == scelta].index[0]) + 2
-                    if index_cancellare > 1 and index_cancellare <= len(sheet.get_all_values()):
-                        sheet.delete_rows(index_cancellare)
-                        st.success("Spesa cancellata!")
-                        # Aggiorna subito i dati e la tabella
-                        df = carica_dati()
-                        spese = df[df["Tipo"] == "Spesa"].copy()
-                        if not spese.empty:
-                            spese["Importo_num"] = clean_importo(spese["Importo"])
-                            spese["Importo"] = spese["Importo_num"].apply(format_currency)
-                            st.dataframe(spese.drop(columns="Importo_num"))
-                    else:
-                        st.error("Impossibile cancellare: indice fuori dal foglio.")
-                except Exception as e:
-                    st.error(f"Errore durante la cancellazione: {e}")
 
     else:
         st.info("Nessuna spesa registrata.")
