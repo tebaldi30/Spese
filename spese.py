@@ -147,27 +147,23 @@ if not df.empty:
 
         col1, col2 = st.columns(2)
 
-        # --- Percentuale speso (freccia giù, rosso, sfondo chiaro) ---
+        # --- Percentuale speso con st.metric (freccia giù, rosso) ---
         with col1:
-            st.markdown(f"""
-                <div style="font-weight:600; font-size:24px; color:#e74c3c;">
-                    {percent_speso:.1f}% &#x25BC;
-                </div>
-                <div style="background-color:#fce5e0; padding:5px 10px; border-radius:5px; display:inline-block; font-size:14px;">
-                    {format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €
-                </div>
-            """, unsafe_allow_html=True)
+            st.metric(
+                label="Speso",
+                value=f"{percent_speso:.1f}% ({format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €)",
+                delta=-totale_spese_valore,
+                delta_color="inverse"
+            )
 
-        # --- Percentuale disponibile (freccia su, verde, sfondo chiaro) ---
+        # --- Percentuale disponibile con st.metric (freccia su, verde) ---
         with col2:
-            st.markdown(f"""
-                <div style="font-weight:600; font-size:24px; color:#27ae60;">
-                    {percent_disp:.1f}% &#x25B2;
-                </div>
-                <div style="background-color:#e0f7e9; padding:5px 10px; border-radius:5px; display:inline-block; font-size:14px;">
-                    {format_currency(restante)} € disponibile
-                </div>
-            """, unsafe_allow_html=True)
+            st.metric(
+                label="Disponibile",
+                value=f"{percent_disp:.1f}% ({format_currency(restante)} € disponibile)",
+                delta=restante,
+                delta_color="normal"
+            )
 
     else:
         st.info("Nessuna spesa registrata.")
