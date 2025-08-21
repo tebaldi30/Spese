@@ -147,40 +147,41 @@ if not df.empty:
         ax.axis("equal")
         st.pyplot(fig)
 
+        # Corretto uso di markdown con unsafe_allow_html=True per le pillole
         pillola_speso = f"""
-            <div style="
-                display: inline-block;
-                background-color: #e74c3c;
-                border-radius: 16px;
-                padding: 6px 16px;
-                font-weight: 600;
-                color: white;
-                font-size: 16px;
-                font-family: inherit;
-                white-space: nowrap;
-                margin-right: 12px;
-            ">
-                Speso: {format_currency(totale_spese_valore)}&nbsp;€
-            </div>
+        <div style="
+            display: inline-block;
+            background-color: #e74c3c;
+            border-radius: 16px;
+            padding: 6px 16px;
+            font-weight: 600;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            white-space: nowrap;
+            margin-right: 12px;
+        ">
+            Speso: {format_currency(totale_spese_valore)}&nbsp;€
+        </div>
         """
 
         pillola_disponibile = f"""
-            <div style="
-                display: inline-block;
-                background-color: #27ae60;
-                border-radius: 16px;
-                padding: 6px 16px;
-                font-weight: 600;
-                color: white;
-                font-size: 16px;
-                font-family: inherit;
-                white-space: nowrap;
-            ">
-                Disponibile: {format_currency(restante)}&nbsp;€
-            </div>
+        <div style="
+            display: inline-block;
+            background-color: #27ae60;
+            border-radius: 16px;
+            padding: 6px 16px;
+            font-weight: 600;
+            color: white;
+            font-size: 16px;
+            font-family: inherit;
+            white-space: nowrap;
+        ">
+            Disponibile: {format_currency(restante)}&nbsp;€
+        </div>
         """
 
-        st.markdown(f'<div>{pillola_speso}{pillola_disponibile}</div>', unsafe_allow_html=True)
+        st.markdown(f"{pillola_speso}{pillola_disponibile}", unsafe_allow_html=True)
 
     else:
         st.info("Nessuna spesa registrata.")
