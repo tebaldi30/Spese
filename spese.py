@@ -107,14 +107,20 @@ if not df.empty:
     spese = df[df["Tipo"] == "Spesa"].copy()
     if not spese.empty:
         spese["Importo"] = clean_importo(spese["Importo"])
+        spese["Importo"] = spese["Importo"].apply(format_currency)  # <--- FORMATTING
         st.dataframe(spese)
 
-        totale_spese = spese["Importo"].sum()
+        totale_spese = spese["Importo"].apply(
+            lambda x: float(x.replace(".", "").replace(",", "."))
+        ).sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
         spese["Data"] = pd.to_datetime(spese["Data"], errors="coerce")
         spese["Mese"] = spese["Data"].dt.to_period("M")
-        spese_mensili = spese.groupby("Mese")["Importo"].sum()
+        # Per il grafico servono valori numerici, quindi usare clean_importo sul gruppo!
+        spese_mensili = spese.groupby("Mese")["Importo"].apply(
+            lambda x: pd.Series(x).replace("\.", "", regex=True).replace(",", ".", regex=True).astype(float).sum()
+        )
 
         st.subheader("📉 Andamento Spese Mensili")
         fig, ax = plt.subplots()
@@ -128,14 +134,19 @@ if not df.empty:
     risp = df[df["Tipo"] == "Risparmio"].copy()
     if not risp.empty:
         risp["Importo"] = clean_importo(risp["Importo"])
+        risp["Importo"] = risp["Importo"].apply(format_currency)  # <--- FORMATTING
         st.dataframe(risp)
 
-        totale_risparmi = risp["Importo"].sum()
+        totale_risparmi = risp["Importo"].apply(
+            lambda x: float(x.replace(".", "").replace(",", "."))
+        ).sum()
         st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
 
         risp["Data"] = pd.to_datetime(risp["Data"], errors="coerce")
         risp["Mese"] = risp["Data"].dt.to_period("M")
-        risp_mensili = risp.groupby("Mese")["Importo"].sum()
+        risp_mensili = risp.groupby("Mese")["Importo"].apply(
+            lambda x: pd.Series(x).replace("\.", "", regex=True).replace(",", ".", regex=True).astype(float).sum()
+        )
 
         st.subheader("📈 Andamento Risparmi Mensili")
         fig, ax = plt.subplots()
