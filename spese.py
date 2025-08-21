@@ -113,8 +113,8 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2000 € elegante
-        st.subheader("📊 Andamento Spese Mensili")
+        # Grafico a torta spese vs budget 2000 € con etichette verdi esterne leggibili
+        st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
         soglia_massima = 2000.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
@@ -124,9 +124,10 @@ if not df.empty:
         colori = ["#e74c3c", "#27ae60"]  # rosso caldo e verde moderno
         etichette = [f"Speso {format_currency(totale_spese_valore)} €", f"Disponibile {format_currency(restante)} €"]
 
+        label_color = "#27ae60"  # Verde usato come colore delle metriche (leggibile in dark e light)
+
         fig, ax = plt.subplots()
 
-        # Sfondo trasparente
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
 
@@ -138,14 +139,20 @@ if not df.empty:
             startangle=90,
             counterclock=False,
             wedgeprops={'edgecolor': 'white', 'linewidth': 2},
-            textprops={'color':"white", 'weight':'bold'}
+            textprops={'color': 'white', 'weight': 'bold'}
         )
 
-        ax.axis("equal")  # cerchio perfetto
+        # Imposta colore verde leggibile per le etichette esterne
+        for text in texts:
+            text.set_color(label_color)
+            text.set_weight('bold')
 
+        # Testo percentuali interne in bianco per visibilità
         for autotext in autotexts:
             autotext.set_color('white')
             autotext.set_weight('bold')
+
+        ax.axis("equal")  # cerchio perfetto
 
         st.pyplot(fig)
     else:
