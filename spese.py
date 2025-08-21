@@ -164,7 +164,8 @@ if not df.empty:
         if "show_risparmi" not in st.session_state:
             st.session_state.show_risparmi = True
 
-        col1, col2 = st.columns([4, 1])
+        # Colonne per allineare metrica e occhio sulla stessa riga
+        col1, col2 = st.columns([5,1])
         with col1:
             st.subheader("🎯 Percentuale Obiettivo Risparmi")
             if st.session_state.show_risparmi:
@@ -177,9 +178,9 @@ if not df.empty:
                 st.metric("Risparmio raggiunto", value="•••••", delta="•••••")
 
         with col2:
-            # Immagine come bottone cliccabile
+            # L'immagine è il bottone stesso
             img_path = "occhio_aperto.png" if st.session_state.show_risparmi else "occhio_chiuso.png"
-            if st.button("", key="occhio_toggle"):
+            if st.button("", key="occhio_toggle", help="Clicca per mostrare/nascondere i risparmi"):
                 st.session_state.show_risparmi = not st.session_state.show_risparmi
             st.image(img_path, width=30)
 
