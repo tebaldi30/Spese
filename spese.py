@@ -152,7 +152,7 @@ if not df.empty:
             st.metric(
                 label="Speso",
                 value=f"{percent_speso:.1f}%",
-                delta=f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €",
+                delta=f"-{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €",
                 delta_color="inverse"
             )
 
@@ -193,3 +193,4 @@ if not df.empty:
 
 else:
     st.info("Nessun dato ancora inserito.")
+
