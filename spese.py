@@ -86,50 +86,63 @@ with st.form("spese_form", clear_on_submit=True):
         st.success("Spesa registrata!")
 
 # --- Form risparmi ---
-st.subheader("➕ Aggiungi Risparmio")
+st.subheader("💵 Gestione Risparmi")
 with st.form("risparmi_form", clear_on_submit=True):
-    data_risp = st.date_input("Data risparmio")
-    valore_risp = st.number_input("Importo risparmiato (€)", min_value=0.0, step=1.0)
-    submitted_risp = st.form_submit_button("Aggiungi Risparmio")
+    data_risp = st.date_input("Data risparmio/prelievo")
+    tipo_risp = st.radio("Tipo movimento", ["Risparmio", "Prelievo"])
+    valore_risp = st.number_input("Importo (€)", min_value=0.0, step=1.0)
+    submitted_risp = st.form_submit_button("Registra Movimento")
     if submitted_risp and valore_risp > 0:
-        salva_dato("Risparmio", data_risp, valore_risp, "")
-        st.success("Risparmio registrato!")
+        if tipo_risp == "Prelievo":
+            valore_risp = -valore_risp
+        salva_dato("Risparmio", data_risp, valore_risp, tipo_risp)
+        st.success(f"{tipo_risp} registrato!")
 
 # --- Aggiorna dati ---
 df = carica_dati()
 
-# --- Tabelle e grafici ---
+# --- RIEPILOGO SPESE ---
 if not df.empty:
-    st.subheader("📊 Riepilogo")
-    st.dataframe(df)
+    st.header("📊 Riepilogo Spese")
+    spese = df[df["Tipo"] == "Spesa"].copy()
+    if not spese.empty:
+        spese["Importo"] = clean_importo(spese["Importo"])
+        st.dataframe(spese)
 
-    spese_importo = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"])
-    risparmi_importo = clean_importo(df[df["Tipo"] == "Risparmio"]["Importo"])
+        totale_spese = spese["Importo"].sum()
+        st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-    totale_spese = spese_importo.sum()
-    totale_risparmi = risparmi_importo.sum()
+        spese["Data"] = pd.to_datetime(spese["Data"], errors="coerce")
+        spese["Mese"] = spese["Data"].dt.to_period("M")
+        spese_mensili = spese.groupby("Mese")["Importo"].sum()
 
-    col1, col2 = st.columns(2)
-    col1.metric("Totale Spese", format_currency(totale_spese) + " €")
-    col2.metric("Totale Risparmi", format_currency(totale_risparmi) + " €")
+        st.subheader("📉 Andamento Spese Mensili")
+        fig, ax = plt.subplots()
+        spese_mensili.plot(kind="bar", ax=ax, color="red", alpha=0.7)
+        st.pyplot(fig)
+    else:
+        st.info("Nessuna spesa registrata.")
 
-    df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
-    df["Mese"] = df["Data"].dt.to_period("M")
+    # --- RIEPILOGO RISPARMI ---
+    st.header("💰 Riepilogo Risparmi")
+    risp = df[df["Tipo"] == "Risparmio"].copy()
+    if not risp.empty:
+        risp["Importo"] = clean_importo(risp["Importo"])
+        st.dataframe(risp)
 
-    spese_mensili = spese_importo.groupby(df.loc[df["Tipo"] == "Spesa", "Mese"]).sum()
-    risparmi_mensili = risparmi_importo.groupby(df.loc[df["Tipo"] == "Risparmio", "Mese"]).sum()
+        totale_risparmi = risp["Importo"].sum()
+        st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
 
-    st.subheader("📈 Andamento Mensile")
-    fig, ax = plt.subplots()
-    spese_mensili.plot(kind="bar", ax=ax, color="red", alpha=0.6, label="Spese")
-    risparmi_mensili.plot(kind="bar", ax=ax, color="green", alpha=0.6, label="Risparmi")
-    ax.legend()
-    st.pyplot(fig)
+        risp["Data"] = pd.to_datetime(risp["Data"], errors="coerce")
+        risp["Mese"] = risp["Data"].dt.to_period("M")
+        risp_mensili = risp.groupby("Mese")["Importo"].sum()
 
-    st.subheader("📋 Conteggio Movimenti")
-    col3, col4 = st.columns(2)
-    col3.metric("Numero Spese", len(df[df["Tipo"] == "Spesa"]))
-    col4.metric("Numero Risparmi", len(df[df["Tipo"] == "Risparmio"]))
+        st.subheader("📈 Andamento Risparmi Mensili")
+        fig, ax = plt.subplots()
+        risp_mensili.plot(kind="bar", ax=ax, color="green", alpha=0.7)
+        st.pyplot(fig)
+    else:
+        st.info("Nessun risparmio registrato.")
 
 else:
     st.info("Nessun dato ancora inserito.")
