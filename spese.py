@@ -147,15 +147,15 @@ if not df.empty:
         ax.axis("equal")
         st.pyplot(fig)
 
-        # Corretto uso di markdown con unsafe_allow_html=True per le pillole
+        # Pillole con sfondo chiaro e testo colorato
         pillola_speso = f"""
         <div style="
             display: inline-block;
-            background-color: #e74c3c;
+            background-color: #fbeaea;    /* rosso chiaro */
             border-radius: 16px;
             padding: 6px 16px;
             font-weight: 600;
-            color: white;
+            color: #e74c3c;               /* testo rosso */
             font-size: 16px;
             font-family: inherit;
             white-space: nowrap;
@@ -168,11 +168,11 @@ if not df.empty:
         pillola_disponibile = f"""
         <div style="
             display: inline-block;
-            background-color: #27ae60;
+            background-color: #e7faf2;    /* verde chiaro */
             border-radius: 16px;
             padding: 6px 16px;
             font-weight: 600;
-            color: white;
+            color: #27ae60;               /* testo verde */
             font-size: 16px;
             font-family: inherit;
             white-space: nowrap;
