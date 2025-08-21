@@ -162,7 +162,7 @@ if not df.empty:
                 line-height:1.2;
                 white-space:nowrap;
                 margin-top: 2px;
-            ">&#8595; {format_currency Speso;(totale_spese_valore)}&nbsp;€ su {format_currency(soglia_massima)}&nbsp;€</span>
+            ">&#8595; Speso {format_currency(totale_spese_valore)}&nbsp;€ su {format_currency(soglia_massima)}&nbsp;€</span>
             """, unsafe_allow_html=True)
 
         with col2:
@@ -211,5 +211,3 @@ if not df.empty:
 
 else:
     st.info("Nessun dato ancora inserito.")
-
-
