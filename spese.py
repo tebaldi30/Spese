@@ -147,7 +147,7 @@ if not df.empty:
 
         col1, col2 = st.columns(2)
 
-        # --- Percentuale speso con info dentro delta ---
+        # --- Percentuale speso con freccia giù rossa e delta negativo ---
         with col1:
             st.metric(
                 label="Speso",
@@ -156,7 +156,7 @@ if not df.empty:
                 delta_color="inverse"  # freccia giù rossa
             )
 
-        # --- Percentuale disponibile con info dentro delta ---
+        # --- Percentuale disponibile con freccia su verde ---
         with col2:
             st.metric(
                 label="Disponibile",
