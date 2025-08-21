@@ -113,7 +113,7 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        soglia_massima = 2000.0
+        soglia_massima = 2500.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
         restante = soglia_massima - totale_spese_valore
 
@@ -196,4 +196,5 @@ if not df.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
