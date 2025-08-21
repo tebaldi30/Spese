@@ -188,7 +188,7 @@ if not df.empty:
         if "toggle_occhio_clicked" not in st.session_state:
             st.session_state.toggle_occhio_clicked = False
 
-        if st.experimental_get_query_params().get("toggle_occhio") or st.session_state.toggle_occhio_clicked:
+        if st.query_params.get("toggle_occhio") or st.session_state.toggle_occhio_clicked:
             st.session_state.show_risparmi = not st.session_state.show_risparmi
             st.session_state.toggle_occhio_clicked = False
             st.experimental_rerun()
