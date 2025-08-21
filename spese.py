@@ -164,17 +164,23 @@ if not df.empty:
             )
             st.caption(f"{format_currency(restante)} € disponibile")
 
-        # --- Cancella spesa ---
+        # --- Cancella spesa robusta ---
         st.subheader("❌ Cancella Spesa")
         opzioni_cancellazione = spese.apply(lambda x: f'{x["Data"]} - {x["Categoria"]} - {x["Importo"]} €', axis=1)
         scelta = st.selectbox("Seleziona spesa da cancellare", [""] + opzioni_cancellazione.tolist())
 
         if st.button("Cancella Spesa Selezionata"):
             if scelta:
-                index_cancellare = opzioni_cancellazione[opzioni_cancellazione == scelta].index[0]
-                sheet.delete_row(index_cancellare + 2)  # +2 perché header + indice zero
-                st.success("Spesa cancellata!")
-                st.experimental_rerun()
+                try:
+                    index_cancellare = int(opzioni_cancellazione[opzioni_cancellazione == scelta].index[0]) + 2
+                    if index_cancellare > 1 and index_cancellare <= len(sheet.get_all_values()):
+                        sheet.delete_row(index_cancellare)
+                        st.success("Spesa cancellata!")
+                        st.experimental_rerun()
+                    else:
+                        st.error("Impossibile cancellare: indice fuori dal foglio.")
+                except Exception as e:
+                    st.error(f"Errore durante la cancellazione: {e}")
 
     else:
         st.info("Nessuna spesa registrata.")
@@ -183,22 +189,4 @@ if not df.empty:
     st.header("💰 Riepilogo Risparmi")
     risp = df[df["Tipo"] == "Risparmio"].copy()
     if not risp.empty:
-        risp["Importo_num"] = clean_importo(risp["Importo"])
-        risp["Importo"] = risp["Importo_num"].apply(format_currency)
-        st.dataframe(risp.drop(columns="Importo_num"))
-
-        totale_risparmi = risp["Importo_num"].sum()
-        st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
-
-        obiettivo_risparmio = 40000.0
-        percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
-        st.subheader("🎯 Percentuale Obiettivo Risparmi")
-        st.metric(
-            label="Risparmio raggiunto",
-            value=f"{percentuale_raggiunta:.1f}%",
-            delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
-        )
-    else:
-        st.info("Nessun risparmio registrato.")
-else:
-    st.info("Nessun dato ancora inserito.")
+        risp["Importo_num"] = clean_]()
