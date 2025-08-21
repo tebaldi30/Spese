@@ -113,42 +113,17 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Effetto pillola sopra il grafico spese
         soglia_massima = 2000.0
         totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
         restante = soglia_massima - totale_spese_valore
 
-        pillola_html = f"""
-        <div style="
-            display: inline-block;
-            background-color: #e7faf2;
-            border-radius: 16px;
-            padding: 6px 16px;
-            font-weight: 600;
-            color: #27ae60;
-            font-size: 16px;
-            font-family: inherit;
-            white-space: nowrap;
-            margin-bottom: 12px;
-        ">
-            {format_currency(totale_spese_valore)}&nbsp;€ su&nbsp;{format_currency(soglia_massima)}&nbsp;€
-        </div>
-        """
-        st.markdown(pillola_html, unsafe_allow_html=True)
-
-        # Grafico a torta spese vs budget 2000 € con etichette numeriche verdi senza testo aggiuntivo
         valori = [totale_spese_valore, restante]
         colori = ["#e74c3c", "#27ae60"]
 
-        def get_label_text(importo, totale):
-            return f"{format_currency(importo)}\u202f€ su {format_currency(totale)}\u202f€"
-
         etichette = [
-            get_label_text(totale_spese_valore, soglia_massima),
-            get_label_text(restante, soglia_massima)
+            format_currency(totale_spese_valore) + "\u202f€",
+            format_currency(restante) + "\u202f€"
         ]
-
-        label_color = "#27ae60"
 
         fig, ax = plt.subplots()
         fig.patch.set_alpha(0.0)
@@ -162,12 +137,8 @@ if not df.empty:
             startangle=90,
             counterclock=False,
             wedgeprops={'edgecolor': 'white', 'linewidth': 2},
-            textprops={'color': label_color, 'weight': 'bold'}
+            textprops={'color': 'white', 'weight': 'bold'}
         )
-
-        for text in texts:
-            text.set_color(label_color)
-            text.set_weight('bold')
 
         for autotext in autotexts:
             autotext.set_color('white')
@@ -175,6 +146,41 @@ if not df.empty:
 
         ax.axis("equal")
         st.pyplot(fig)
+
+        pillola_speso = f"""
+            <div style="
+                display: inline-block;
+                background-color: #e74c3c;
+                border-radius: 16px;
+                padding: 6px 16px;
+                font-weight: 600;
+                color: white;
+                font-size: 16px;
+                font-family: inherit;
+                white-space: nowrap;
+                margin-right: 12px;
+            ">
+                Speso: {format_currency(totale_spese_valore)}&nbsp;€
+            </div>
+        """
+
+        pillola_disponibile = f"""
+            <div style="
+                display: inline-block;
+                background-color: #27ae60;
+                border-radius: 16px;
+                padding: 6px 16px;
+                font-weight: 600;
+                color: white;
+                font-size: 16px;
+                font-family: inherit;
+                white-space: nowrap;
+            ">
+                Disponibile: {format_currency(restante)}&nbsp;€
+            </div>
+        """
+
+        st.markdown(f'<div>{pillola_speso}{pillola_disponibile}</div>', unsafe_allow_html=True)
 
     else:
         st.info("Nessuna spesa registrata.")
