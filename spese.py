@@ -37,13 +37,44 @@ def format_currency(value):
     """Formatta il numero in stile italiano: 1.200,00"""
     return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-# --- Interfaccia ---
-st.title("💰 Gestione Spese e Risparmi")
-
-# Carico i dati esistenti
+# --- Carico i dati ---
 df = carica_dati()
+spese_importo = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"]) if not df.empty else pd.Series(dtype=float)
+totale_spese = spese_importo.sum() if not df.empty else 0.0
 
-# Form spese
+# --- Titolo con pallina in alto ---
+st.markdown(
+    """
+    <style>
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+    .blinking {
+        animation: blink 1s infinite;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+colore = "green" if totale_spese < 2000 else "red"
+classe = "blinking" if colore == "red" else ""
+
+st.markdown(
+    f"""
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h1 style="margin:0;">💰 Gestione Spese e Risparmi</h1>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:20px;height:20px;border-radius:50%;background:{colore};"
+                 class="{classe}"></div>
+            <span style="font-size:16px;">Totale Spese: {format_currency(totale_spese)} €</span>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+# --- Form spese ---
 st.subheader("➖ Aggiungi Spesa")
 with st.form("spese_form", clear_on_submit=True):
     data_spesa = st.date_input("Data spesa")
@@ -54,7 +85,7 @@ with st.form("spese_form", clear_on_submit=True):
         salva_dato("Spesa", data_spesa, valore_spesa, tipo_spesa)
         st.success("Spesa registrata!")
 
-# Form risparmi
+# --- Form risparmi ---
 st.subheader("➕ Aggiungi Risparmio")
 with st.form("risparmi_form", clear_on_submit=True):
     data_risp = st.date_input("Data risparmio")
@@ -64,10 +95,10 @@ with st.form("risparmi_form", clear_on_submit=True):
         salva_dato("Risparmio", data_risp, valore_risp, "")
         st.success("Risparmio registrato!")
 
-# Aggiorna dataframe
+# --- Aggiorna dati ---
 df = carica_dati()
 
-# --- Tabelle ---
+# --- Tabelle e grafici ---
 if not df.empty:
     st.subheader("📊 Riepilogo")
     st.dataframe(df)
@@ -78,39 +109,10 @@ if not df.empty:
     totale_spese = spese_importo.sum()
     totale_risparmi = risparmi_importo.sum()
 
-    if pd.isna(totale_spese):
-        totale_spese = 0.0
-    if pd.isna(totale_risparmi):
-        totale_risparmi = 0.0
-
     col1, col2 = st.columns(2)
     col1.metric("Totale Spese", format_currency(totale_spese) + " €")
     col2.metric("Totale Risparmi", format_currency(totale_risparmi) + " €")
 
-    # --- Allerta con pallina lampeggiante ---
-    colore = "green" if totale_spese < 2000 else "red"
-    animazione = """
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-        .blinking {
-            animation: blink 1s infinite;
-        }
-    """
-    st.markdown(f"<style>{animazione}</style>", unsafe_allow_html=True)
-
-    st.markdown(
-        f"""
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div style="width:20px;height:20px;border-radius:50%;background:{colore};"
-                 class="{'blinking' if colore == 'red' else ''}"></div>
-            <span style="font-size:18px;">Allerta Spese: {format_currency(totale_spese)} €</span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # --- Grafico ---
     df["Data"] = pd.to_datetime(df["Data"], errors="coerce")
     df["Mese"] = df["Data"].dt.to_period("M")
 
@@ -124,13 +126,10 @@ if not df.empty:
     ax.legend()
     st.pyplot(fig)
 
-    conteggio_spese = len(df[df["Tipo"] == "Spesa"])
-    conteggio_risparmi = len(df[df["Tipo"] == "Risparmio"])
-
     st.subheader("📋 Conteggio Movimenti")
     col3, col4 = st.columns(2)
-    col3.metric("Numero Spese", conteggio_spese)
-    col4.metric("Numero Risparmi", conteggio_risparmi)
+    col3.metric("Numero Spese", len(df[df["Tipo"] == "Spesa"]))
+    col4.metric("Numero Risparmi", len(df[df["Tipo"] == "Risparmio"]))
 
 else:
     st.info("Nessun dato ancora inserito.")
