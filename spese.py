@@ -113,7 +113,7 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        # Grafico a torta spese vs budget 2000 € con etichette verdi esterne leggibili
+        # Grafico a torta spese vs budget 2000 € senza etichette esterne
         st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
         soglia_massima = 2000.0
@@ -121,19 +121,16 @@ if not df.empty:
         restante = soglia_massima - totale_spese_valore
 
         valori = [totale_spese_valore, restante]
-        colori = ["#e74c3c", "#27ae60"]  # rosso caldo e verde moderno
-        etichette = [f"Speso {format_currency(totale_spese_valore)} €", f"Disponibile {format_currency(restante)} €"]
-
-        label_color = "#27ae60"  # Verde usato come colore delle metriche (leggibile in dark e light)
+        colori = ["#e74c3c", "#27ae60"]
 
         fig, ax = plt.subplots()
 
         fig.patch.set_alpha(0.0)
         ax.patch.set_alpha(0.0)
 
-        wedges, texts, autotexts = ax.pie(
+        wedges, autotexts = ax.pie(
             valori,
-            labels=etichette,
+            labels=None,
             colors=colori,
             autopct="%1.1f%%",
             startangle=90,
@@ -142,19 +139,23 @@ if not df.empty:
             textprops={'color': 'white', 'weight': 'bold'}
         )
 
-        # Imposta colore verde leggibile per le etichette esterne
-        for text in texts:
-            text.set_color(label_color)
-            text.set_weight('bold')
-
-        # Testo percentuali interne in bianco per visibilità
-        for autotext in autotexts:
-            autotext.set_color('white')
-            autotext.set_weight('bold')
-
-        ax.axis("equal")  # cerchio perfetto
+        ax.axis("equal")
 
         st.pyplot(fig)
+
+        # Testo verde esterno simile a st.metric
+        verde_metric = "#27ae60"
+        testo_etichette = (
+            f"<div style='color:{verde_metric}; "
+            "background-color:rgba(39, 174, 96, 0.1); padding:8px; "
+            "border-radius:8px; font-weight:bold; max-width:350px;'>"
+            f"Speso {format_currency(totale_spese_valore)} € &nbsp;&nbsp;&nbsp; "
+            f"Disponibile {format_currency(restante)} €"
+            "</div>"
+        )
+
+        st.markdown(testo_etichette, unsafe_allow_html=True)
+
     else:
         st.info("Nessuna spesa registrata.")
 
