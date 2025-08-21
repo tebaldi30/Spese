@@ -147,40 +147,32 @@ if not df.empty:
 
         col1, col2 = st.columns(2)
 
+        # --- Percentuale speso ---
         with col1:
             st.markdown(f"""
             <div style="font-weight: 600; font-size: 22px; color: #111111;">{percent_speso:.1f}%</div>
-            <span style="
-                display:inline-block;
-                background-color: #fde2e2;
-                border-radius:16px;
-                padding:2px 10px;
-                color:#e74c3c;
-                font-weight:600;
-                font-size:14px;
-                font-family: inherit;
-                line-height:1.2;
-                white-space:nowrap;
+            <div style="
+                font-weight: 600;
+                font-size: 14px;
+                color: #e74c3c;
                 margin-top: 2px;
-            ">&#8595; Speso {format_currency(totale_spese_valore)}&nbsp;€ su {format_currency(soglia_massima)}&nbsp;€</span>
+            ">
+                &#8595; Speso {format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €
+            </div>
             """, unsafe_allow_html=True)
 
+        # --- Percentuale disponibile ---
         with col2:
             st.markdown(f"""
             <div style="font-weight: 600; font-size: 22px; color: #111111;">{percent_disp:.1f}%</div>
-            <span style="
-                display:inline-block;
-                background-color: #e6f8ee;
-                border-radius:16px;
-                padding:2px 10px;
-                color:#27ae60;
-                font-weight:600;
-                font-size:14px;
-                font-family: inherit;
-                line-height:1.2;
-                white-space:nowrap;
+            <div style="
+                font-weight: 600;
+                font-size: 14px;
+                color: #27ae60;
                 margin-top: 2px;
-            ">{format_currency(restante)}&nbsp;€ disponibile</span>
+            ">
+                {format_currency(restante)} € disponibile
+            </div>
             """, unsafe_allow_html=True)
 
     else:
