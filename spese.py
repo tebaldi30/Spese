@@ -113,23 +113,20 @@ if not df.empty:
         totale_spese = spese["Importo_num"].sum()
         st.metric("Totale Spese", format_currency(totale_spese) + " €")
 
-        spese["Data"] = pd.to_datetime(spese["Data"], errors="coerce")
-        spese["Mese"] = spese["Data"].dt.to_period("M")
-        spese_mensili = spese.groupby("Mese")["Importo_num"].sum()
+        # Grafico a torta spese vs budget 2000 €
+        st.subheader("📊 Utilizzo Budget Spese (2.000 € disponibili)")
 
-        # Grafico spese con soglia massima rappresentata
-        st.subheader("📉 Andamento Spese Mensili")
-        fig, ax = plt.subplots(figsize=(10, 5))
-        spese_mensili.plot(kind="bar", ax=ax, color="red", alpha=0.7)
+        soglia_massima = 2000.0
+        totale_spese_valore = totale_spese if totale_spese <= soglia_massima else soglia_massima
+        restante = soglia_massima - totale_spese_valore
 
-        # Linea orizzontale per soglia massima 2000 €
-        ax.axhline(y=2000, color='blue', linestyle='--', linewidth=2)
+        valori = [totale_spese_valore, restante]
+        colori = ["red", "green"]
+        etichette = [f"Speso {format_currency(totale_spese_valore)} €", f"Disponibile {format_currency(restante)} €"]
 
-        ax.set_title("Spese Mensili", fontsize=16, fontweight='bold')
-        ax.set_xlabel("Mese", fontsize=12)
-        ax.set_ylabel("Importo (€)", fontsize=12)
-        ax.grid(axis='y', linestyle='--', alpha=0.6)
-
+        fig, ax = plt.subplots()
+        ax.pie(valori, labels=etichette, colors=colori, autopct="%1.1f%%", startangle=90, counterclock=False)
+        ax.axis("equal")  # cerchio perfetto
         st.pyplot(fig)
     else:
         st.info("Nessuna spesa registrata.")
