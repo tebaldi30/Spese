@@ -6,33 +6,37 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 # --- UTENTI E PASSWORD (esempio) ---
 USERS = {
-    "gabriel": "12345678",
-    "maciele": "12345678"
+    "mario": "password123",
+    "luca": "pass456"
 }
 
-# --- Controlla login ---
+# --- Session state per login ---
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.username = ""
 
-if not st.session_state.logged_in:
+# --- Pagina di login ---
+def login_page():
     st.title("🔐 Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
-    if st.button("Accedi"):
+    login_clicked = st.button("Accedi")
+    
+    if login_clicked:
         if username in USERS and USERS[username] == password:
             st.session_state.logged_in = True
             st.session_state.username = username
             st.success(f"Benvenuto {username}!")
-            st.experimental_rerun()
         else:
             st.error("Username o password errati")
-else:
-    # --- Logout ---
+
+# --- Funzioni principali dell'app ---
+def main_app():
+    # Logout
     if st.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.username = ""
-        st.experimental_rerun()
+        return
 
     # --- Connessione a Google Sheets ---
     @st.cache_resource
@@ -64,10 +68,9 @@ else:
         )
 
     def format_currency(value):
-        """Formatta il numero in stile italiano: 1.200,00"""
         return f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
-    # --- Carico i dati ---
+    # --- Carico dati ---
     df = carica_dati()
     spese_importo = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"]) if not df.empty else pd.Series(dtype=float)
     totale_spese = spese_importo.sum() if not df.empty else 0.0
@@ -222,3 +225,8 @@ else:
     else:
         st.info("Nessun dato ancora inserito.")
 
+# --- Flusso principale ---
+if not st.session_state.logged_in:
+    login_page()
+else:
+    main_app()
