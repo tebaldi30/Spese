@@ -18,7 +18,11 @@ sheet = connect_gsheets()
 # --- Funzioni ---
 def carica_dati():
     records = sheet.get_all_records()
-    return pd.DataFrame(records)
+    df = pd.DataFrame(records)
+    if not df.empty:
+        # Converte la colonna 'Data' nel formato gg,mm,aaaa
+        df['Data'] = pd.to_datetime(df['Data'], errors='coerce').dt.strftime('%d,%m,%Y')
+    return df
 
 def salva_dato(tipo, data, importo, categoria=""):
     # Converte la data in formato gg,mm,aaaa
@@ -41,7 +45,6 @@ def format_currency(value):
 
 # --- Carico i dati ---
 df = carica_dati()
-df['Data'] = pd.to_datetime(df['Data'], errors='coerce').dt.strftime('%d,/,%m,/,%Y')
 spese_importo = clean_importo(df[df["Tipo"] == "Spesa"]["Importo"]) if not df.empty else pd.Series(dtype=float)
 totale_spese = spese_importo.sum() if not df.empty else 0.0
 
@@ -86,7 +89,7 @@ with st.form("spese_form", clear_on_submit=True):
     submitted_spesa = st.form_submit_button("Aggiungi Spesa")
     if submitted_spesa and valore_spesa > 0:
         salva_dato("Spesa", data_spesa, valore_spesa, tipo_spesa)
-        st.success("Spesa registrata!")
+        st.success(f"Spesa registrata! ({data_spesa.strftime('%d,%m,%Y')})")
 
 # --- Form risparmi ---
 st.subheader("💵 Gestione Risparmi")
@@ -99,7 +102,7 @@ with st.form("risparmi_form", clear_on_submit=True):
         if tipo_risp == "Prelievo":
             valore_risp = -valore_risp
         salva_dato("Risparmio", data_risp, valore_risp, tipo_risp)
-        st.success(f"{tipo_risp} registrato!")
+        st.success(f"{tipo_risp} registrato! ({data_risp.strftime('%d,%m,%Y')})")
 
 # --- Aggiorna dati ---
 df = carica_dati()
@@ -199,8 +202,3 @@ if not df.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
-
-
-
-
-
