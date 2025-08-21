@@ -120,7 +120,6 @@ if not df.empty:
         valori = [totale_spese_valore, restante]
         colori = ["#e74c3c", "#27ae60"]
 
-        # Calcolo percentuali per speso e disponibile
         percent_speso = (totale_spese_valore / soglia_massima) * 100 if soglia_massima else 0
         percent_disp = 100 - percent_speso
 
@@ -132,7 +131,7 @@ if not df.empty:
             valori,
             colors=colori,
             autopct='%1.1f%%',
-            pctdistance=1.1,   # percentuali fuori dal cerchio
+            pctdistance=1.1,
             labeldistance=1.2,
             startangle=90,
             counterclock=False,
@@ -140,7 +139,6 @@ if not df.empty:
             textprops={'color': 'black', 'weight': 'bold'}
         )
 
-        # Rimuovo le labels testuali per pulizia
         for text in texts:
             text.set_text('')
 
@@ -151,27 +149,43 @@ if not df.empty:
 
         with col1:
             st.markdown(f"""
-            <div style="color:#e74c3c; font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 6px;">
-                &#8595; {percent_speso:.1f}%
-            </div>
-            <div style="color:#e74c3c; font-weight: 600; font-size: 14px;">
-                {format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €
-            </div>
+            <div style="font-weight: 600; font-size: 22px; color: #111111;">{percent_speso:.1f}%</div>
+            <span style="
+                display:inline-block;
+                background-color: #fde2e2;
+                border-radius:16px;
+                padding:2px 10px;
+                color:#e74c3c;
+                font-weight:600;
+                font-size:14px;
+                font-family: inherit;
+                line-height:1.2;
+                white-space:nowrap;
+                margin-top: 2px;
+            ">&#8595; {format_currency(totale_spese_valore)}&nbsp;€ su {format_currency(soglia_massima)}&nbsp;€</span>
             """, unsafe_allow_html=True)
 
         with col2:
             st.markdown(f"""
-            <div style="color:#27ae60; font-weight: 600; font-size: 16px;">
-                {percent_disp:.1f}%
-            </div>
-            <div style="color:#27ae60; font-weight: 600; font-size: 14px;">
-                {format_currency(restante)} € disponibile
-            </div>
+            <div style="font-weight: 600; font-size: 22px; color: #111111;">{percent_disp:.1f}%</div>
+            <span style="
+                display:inline-block;
+                background-color: #e6f8ee;
+                border-radius:16px;
+                padding:2px 10px;
+                color:#27ae60;
+                font-weight:600;
+                font-size:14px;
+                font-family: inherit;
+                line-height:1.2;
+                white-space:nowrap;
+                margin-top: 2px;
+            ">{format_currency(restante)}&nbsp;€ disponibile</span>
             """, unsafe_allow_html=True)
 
     else:
         st.info("Nessuna spesa registrata.")
-    
+
     # --- RIEPILOGO RISPARMI ---
     st.header("💰 Riepilogo Risparmi")
     risp = df[df["Tipo"] == "Risparmio"].copy()
