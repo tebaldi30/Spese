@@ -120,10 +120,9 @@ if not df.empty:
         valori = [totale_spese_valore, restante]
         colori = ["#e74c3c", "#27ae60"]
 
-        etichette = [
-            format_currency(totale_spese_valore) + "\u202f€",
-            format_currency(restante) + "\u202f€"
-        ]
+        # Calcolo percentuali per speso e disponibile
+        percent_speso = (totale_spese_valore / soglia_massima) * 100 if soglia_massima else 0
+        percent_disp = 100 - percent_speso
 
         fig, ax = plt.subplots()
         fig.patch.set_alpha(0.0)
@@ -131,63 +130,48 @@ if not df.empty:
 
         wedges, texts, autotexts = ax.pie(
             valori,
-            labels=etichette,
             colors=colori,
-            autopct="%1.1f%%",
+            autopct='%1.1f%%',
+            pctdistance=1.1,   # percentuali fuori dal cerchio
+            labeldistance=1.2,
             startangle=90,
             counterclock=False,
             wedgeprops={'edgecolor': 'white', 'linewidth': 2},
-            textprops={'color': 'white', 'weight': 'bold'}
+            textprops={'color': 'black', 'weight': 'bold'}
         )
 
-        for autotext in autotexts:
-            autotext.set_color('white')
-            autotext.set_weight('bold')
+        # Rimuovo le labels testuali per pulizia
+        for text in texts:
+            text.set_text('')
 
-        ax.axis("equal")
+        ax.axis('equal')
         st.pyplot(fig)
 
-        # Pillole dimensioni e stile come risparmio raggiunto
-        pillola_speso = f"""
-        <span style="
-            display: inline-block;
-            background-color: #fde2e2;
-            border-radius: 16px;
-            padding: 2px 10px;
-            font-weight: 600;
-            color: #e74c3c;
-            font-size: 14px;
-            font-family: inherit;
-            line-height: 1.2;
-            white-space: nowrap;
-            margin-right: 8px;
-        ">
-            Speso: {format_currency(totale_spese_valore)}&nbsp;€
-        </span>
-        """
+        col1, col2 = st.columns(2)
 
-        pillola_disponibile = f"""
-        <span style="
-            display: inline-block;
-            background-color: #e6f8ee;
-            border-radius: 16px;
-            padding: 2px 10px;
-            font-weight: 600;
-            color: #27ae60;
-            font-size: 14px;
-            font-family: inherit;
-            line-height: 1.2;
-            white-space: nowrap;
-        ">
-            Disponibile: {format_currency(restante)}&nbsp;€
-        </span>
-        """
+        with col1:
+            st.markdown(f"""
+            <div style="color:#e74c3c; font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 6px;">
+                &#8595; {percent_speso:.1f}%
+            </div>
+            <div style="color:#e74c3c; font-weight: 600; font-size: 14px;">
+                {format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €
+            </div>
+            """, unsafe_allow_html=True)
 
-        st.markdown(f"{pillola_speso}{pillola_disponibile}", unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""
+            <div style="color:#27ae60; font-weight: 600; font-size: 16px;">
+                {percent_disp:.1f}%
+            </div>
+            <div style="color:#27ae60; font-weight: 600; font-size: 14px;">
+                {format_currency(restante)} € disponibile
+            </div>
+            """, unsafe_allow_html=True)
 
     else:
         st.info("Nessuna spesa registrata.")
-
+    
     # --- RIEPILOGO RISPARMI ---
     st.header("💰 Riepilogo Risparmi")
     risp = df[df["Tipo"] == "Risparmio"].copy()
