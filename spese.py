@@ -173,6 +173,9 @@ with st.form("risparmi_form", clear_on_submit=True):
         salva_dato("Risparmio", data_risp, valore_risp, tipo_risp)
         st.success(f"{tipo_risp} registrato!")
 
+# --- Aggiorna dati ---
+df = carica_dati()
+
     # --- RIEPILOGO RISPARMI ---
     st.header("💰 Riepilogo Risparmi")
     risp = df[df["Tipo"] == "Risparmio"].copy()
@@ -196,6 +199,7 @@ with st.form("risparmi_form", clear_on_submit=True):
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
