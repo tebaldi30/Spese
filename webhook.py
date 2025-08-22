@@ -1,12 +1,13 @@
 from flask import Flask, request, jsonify
-import gspread
+import gspread, os, json
 from oauth2client.service_account import ServiceAccountCredentials
 
 app = Flask(__name__)
 
 # --- Config Google Sheets (uguale al tuo Streamlit) ---
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("creds.json", scope)
+creds_dict = json.loads(os.environ["GCP_CREDS"])
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open_by_key("1Wf8A8BkTPJGrQmJca35_Spsbj1HJxmZoLffkreqGkrM").sheet1  
 
@@ -46,3 +47,4 @@ def webhook():
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)
+
