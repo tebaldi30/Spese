@@ -182,7 +182,7 @@ risp = df[df["Tipo"] == "Risparmio"].copy()
 if not risp.empty:
     risp["Importo_num"] = clean_importo(risp["Importo"])
     risp["Importo"] = risp["Importo_num"].apply(format_currency)
-        st.dataframe(risp.drop(columns="Importo_num"))
+    st.dataframe(risp.drop(columns="Importo_num"))
 
         totale_risparmi = risp["Importo_num"].sum()
         st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
@@ -199,6 +199,7 @@ if not risp.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
