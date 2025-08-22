@@ -178,8 +178,8 @@ df = carica_dati()
    
 # --- RIEPILOGO RISPARMI ---
 st.header("💰 Riepilogo Risparmi")
-    risp = df[df["Tipo"] == "Risparmio"].copy()
-    if not risp.empty:
+risp = df[df["Tipo"] == "Risparmio"].copy()
+if not risp.empty:
     risp["Importo_num"] = clean_importo(risp["Importo"])
     risp["Importo"] = risp["Importo_num"].apply(format_currency)
         st.dataframe(risp.drop(columns="Importo_num"))
@@ -199,6 +199,7 @@ st.header("💰 Riepilogo Risparmi")
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
