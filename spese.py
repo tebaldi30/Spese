@@ -196,9 +196,10 @@ if not risp.empty:
             delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
         )
 else:
-    st.info("Nessun risparmio registrato.")
-        else:
-            st.info("Nessun dato ancora inserito.")
+        st.info("Nessun risparmio registrato.")
+else:
+    st.info("Nessun dato ancora inserito.")
+
 
 
 
