@@ -137,7 +137,6 @@ if not df.empty:
 
         col1, col2 = st.columns(2)
 
-        # --- Percentuale speso: freccia giù rossa, valore negativo ---
         with col1:
             st.metric(
                 label="Speso",
@@ -147,7 +146,6 @@ if not df.empty:
             )
             st.caption(f"{format_currency(totale_spese_valore)} € su {format_currency(soglia_massima)} €")
 
-        # --- Percentuale disponibile: freccia su verde ---
         with col2:
             st.metric(
                 label="Disponibile",
@@ -160,7 +158,7 @@ if not df.empty:
     else:
         st.info("Nessuna spesa registrata.")
 
-# --- Form risparmi ---
+    # --- Form risparmi (QUI, tra spese e riepilogo risparmi) ---
     st.subheader("💵 Gestione Risparmi")
     with st.form("risparmi_form", clear_on_submit=True):
         data_risp = st.date_input("Data risparmio/prelievo")
@@ -173,10 +171,7 @@ if not df.empty:
             salva_dato("Risparmio", data_risp, valore_risp, tipo_risp)
             st.success(f"{tipo_risp} registrato!")
 
-# --- Aggiorna dati ---
-df = carica_dati()
-   
-# --- RIEPILOGO RISPARMI ---
+    # --- RIEPILOGO RISPARMI ---
     st.header("💰 Riepilogo Risparmi")
     risp = df[df["Tipo"] == "Risparmio"].copy()
     if not risp.empty:
@@ -191,14 +186,16 @@ df = carica_dati()
         percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
         st.subheader("🎯 Percentuale Obiettivo Risparmi")
         st.metric(
-                label="Risparmio raggiunto",
-                value=f"{percentuale_raggiunta:.1f}%",
-                delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
+            label="Risparmio raggiunto",
+            value=f"{percentuale_raggiunta:.1f}%",
+            delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
         )
-        else:
-            st.info("Nessun risparmio registrato.")
+    else:
+        st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
+
 
 
 
