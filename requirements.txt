@@ -4,4 +4,6 @@ matplotlib
 gspread
 oauth2client
 streamlit-aggrid
+Flask
+gunicorn
 
