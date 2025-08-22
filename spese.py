@@ -161,17 +161,17 @@ if not df.empty:
         st.info("Nessuna spesa registrata.")
 
 # --- Form risparmi ---
-st.subheader("💵 Gestione Risparmi")
-with st.form("risparmi_form", clear_on_submit=True):
-    data_risp = st.date_input("Data risparmio/prelievo")
-    tipo_risp = st.radio("Tipo movimento", ["Risparmio", "Prelievo"])
-    valore_risp = st.number_input("Importo (€)", min_value=0.0, step=1.0)
-    submitted_risp = st.form_submit_button("Registra Movimento")
-    if submitted_risp and valore_risp > 0:
-        if tipo_risp == "Prelievo":
-            valore_risp = -valore_risp
-        salva_dato("Risparmio", data_risp, valore_risp, tipo_risp)
-        st.success(f"{tipo_risp} registrato!")
+    st.subheader("💵 Gestione Risparmi")
+    with st.form("risparmi_form", clear_on_submit=True):
+        data_risp = st.date_input("Data risparmio/prelievo")
+        tipo_risp = st.radio("Tipo movimento", ["Risparmio", "Prelievo"])
+        valore_risp = st.number_input("Importo (€)", min_value=0.0, step=1.0)
+        submitted_risp = st.form_submit_button("Registra Movimento")
+        if submitted_risp and valore_risp > 0:
+            if tipo_risp == "Prelievo":
+                valore_risp = -valore_risp
+            salva_dato("Risparmio", data_risp, valore_risp, tipo_risp)
+            st.success(f"{tipo_risp} registrato!")
 
 # --- Aggiorna dati ---
 df = carica_dati()
@@ -199,6 +199,7 @@ if not risp.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
