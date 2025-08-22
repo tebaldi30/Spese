@@ -190,7 +190,7 @@ if not risp.empty:
     obiettivo_risparmio = 30000.0
     percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
     st.subheader("🎯 Percentuale Obiettivo Risparmi")
-        st.metric(
+    st.metric(
             label="Risparmio raggiunto",
             value=f"{percentuale_raggiunta:.1f}%",
             delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
@@ -199,6 +199,7 @@ if not risp.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
