@@ -195,10 +195,11 @@ if not risp.empty:
             value=f"{percentuale_raggiunta:.1f}%",
             delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
         )
-else:
+    else:
         st.info("Nessun risparmio registrato.")
-else:
-    st.info("Nessun dato ancora inserito.")
+    else:
+        st.info("Nessun dato ancora inserito.")
+
 
 
 
