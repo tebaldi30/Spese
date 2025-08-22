@@ -197,8 +197,9 @@ if not risp.empty:
         )
 else:
     st.info("Nessun risparmio registrato.")
-    else:
-    st.info("Nessun dato ancora inserito.")
+        else:
+            st.info("Nessun dato ancora inserito.")
+
 
 
 
