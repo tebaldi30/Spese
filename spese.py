@@ -184,12 +184,12 @@ if not risp.empty:
     risp["Importo"] = risp["Importo_num"].apply(format_currency)
     st.dataframe(risp.drop(columns="Importo_num"))
 
-        totale_risparmi = risp["Importo_num"].sum()
-        st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
+    totale_risparmi = risp["Importo_num"].sum()
+    st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
 
-        obiettivo_risparmio = 30000.0
-        percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
-        st.subheader("🎯 Percentuale Obiettivo Risparmi")
+    obiettivo_risparmio = 30000.0
+    percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
+    st.subheader("🎯 Percentuale Obiettivo Risparmi")
         st.metric(
             label="Risparmio raggiunto",
             value=f"{percentuale_raggiunta:.1f}%",
@@ -199,6 +199,7 @@ if not risp.empty:
         st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
