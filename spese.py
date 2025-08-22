@@ -177,28 +177,29 @@ if not df.empty:
 df = carica_dati()
    
 # --- RIEPILOGO RISPARMI ---
-st.header("💰 Riepilogo Risparmi")
-risp = df[df["Tipo"] == "Risparmio"].copy()
-if not risp.empty:
-    risp["Importo_num"] = clean_importo(risp["Importo"])
-    risp["Importo"] = risp["Importo_num"].apply(format_currency)
-    st.dataframe(risp.drop(columns="Importo_num"))
+    st.header("💰 Riepilogo Risparmi")
+    risp = df[df["Tipo"] == "Risparmio"].copy()
+    if not risp.empty:
+        risp["Importo_num"] = clean_importo(risp["Importo"])
+        risp["Importo"] = risp["Importo_num"].apply(format_currency)
+        st.dataframe(risp.drop(columns="Importo_num"))
 
-    totale_risparmi = risp["Importo_num"].sum()
-    st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
+        totale_risparmi = risp["Importo_num"].sum()
+        st.metric("Saldo Risparmi", format_currency(totale_risparmi) + " €")
 
-    obiettivo_risparmio = 30000.0
-    percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
-    st.subheader("🎯 Percentuale Obiettivo Risparmi")
-    st.metric(
-            label="Risparmio raggiunto",
-            value=f"{percentuale_raggiunta:.1f}%",
-            delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
+        obiettivo_risparmio = 30000.0
+        percentuale_raggiunta = totale_risparmi / obiettivo_risparmio * 100 if obiettivo_risparmio else 0
+        st.subheader("🎯 Percentuale Obiettivo Risparmi")
+        st.metric(
+                label="Risparmio raggiunto",
+                value=f"{percentuale_raggiunta:.1f}%",
+                delta=f"{format_currency(totale_risparmi)} € su {format_currency(obiettivo_risparmio)} €"
         )
-    else:
-        st.info("Nessun risparmio registrato.")
+        else:
+            st.info("Nessun risparmio registrato.")
 else:
     st.info("Nessun dato ancora inserito.")
+
 
 
 
